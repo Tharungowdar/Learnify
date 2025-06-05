@@ -264,12 +264,15 @@ textarea.textarea-lg {
         flex-direction: column;
         max-width: 600px;
     }
+
     .sidebar {
         width: 80px;
     }
+
     .tab span {
         display: none;
     }
+
     .logo h1 {
         font-size: 1.5rem;
     }
@@ -280,7 +283,9 @@ textarea.textarea-lg {
         min-width: 0;
         padding: 25px 8px;
     }
-    .input-lg, .textarea-lg {
+
+    .input-lg,
+    .textarea-lg {
         padding: 13px 12px;
     }
 }
@@ -438,8 +443,15 @@ textarea.textarea-lg {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 #auth-section {
@@ -554,14 +566,31 @@ textarea.textarea-lg {
     display: none;
     position: fixed;
     z-index: 1111;
-    left: 0; top: 0; width: 100vw; height: 100vh;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
     background: rgba(44, 62, 80, 0.28);
     justify-content: center;
     align-items: center;
     transition: background 0.2s;
 }
-.modal.active { display: flex; animation: modalFadeIn 0.22s; }
-@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal.active {
+    display: flex;
+    animation: modalFadeIn 0.22s;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 .modal-content {
     background: #fff;
     border-radius: 14px;
@@ -571,16 +600,21 @@ textarea.textarea-lg {
     max-width: 520px;
     position: relative;
 }
+
 .close-modal {
     position: absolute;
-    right: 18px; top: 16px;
+    right: 18px;
+    top: 16px;
     font-size: 1.6rem;
     color: #e53935;
     font-weight: 900;
     cursor: pointer;
     transition: color 0.17s;
 }
-.close-modal:hover { color: #b71c1c; }
+
+.close-modal:hover {
+    color: #b71c1c;
+}
 
 .badge {
     display: inline-block;
@@ -596,6 +630,7 @@ textarea.textarea-lg {
 #articles-grouped-list .course-group {
     margin-bottom: 28px;
 }
+
 .course-group-title {
     font-size: 1.13rem;
     font-weight: 600;
@@ -605,19 +640,31 @@ textarea.textarea-lg {
     align-items: center;
     gap: 6px;
 }
+
 .course-articles-list {
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
 }
+
 .course-articles-list .item-card {
     width: 100%;
     max-width: 350px;
 }
+
 @media (max-width: 900px) {
-    .main-container { flex-direction: column; }
-    .sidebar { width: 100%; min-height: unset; }
-    .content-area { padding: 16px; }
+    .main-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-height: unset;
+    }
+
+    .content-area {
+        padding: 16px;
+    }
 }
 
 /* Modal Styles */
@@ -869,12 +916,15 @@ textarea.textarea-lg {
         flex-direction: column;
         max-width: 600px;
     }
+
     .sidebar {
         width: 80px;
     }
+
     .tab span {
         display: none;
     }
+
     .logo h1 {
         font-size: 1.5rem;
     }
@@ -884,15 +934,19 @@ textarea.textarea-lg {
     .grid {
         grid-template-columns: 1fr;
     }
+
     .sidebar {
         display: none;
     }
+
     .main-container {
         flex-direction: column;
     }
+
     .content-area {
         padding: 18px 5px;
     }
+
     header {
         padding: 0 10px;
     }

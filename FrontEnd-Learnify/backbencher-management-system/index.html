@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BackBencher EMS - Modern Education Platform</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header>
         <div class="logo">
             <i class="fas fa-book-open"></i>
-             <h1>Learnify</h1>
+            <h1>Learnify</h1>
         </div>
         <button id="logout-btn" class="btn btn-danger hidden">
             <i class="fas fa-sign-out-alt"></i> Logout
@@ -21,31 +24,34 @@
 
     <div class="main-container">
         <!-- Sidebar Navigation -->
-        <!-- Sidebar Navigation -->
-<aside class="sidebar">
-    <div class="tabs">
-        <div class="tab active" data-tab="dashboard">
-            <i class="fas fa-chart-line"></i>
-            <span>Dashboard</span>
-        </div>
-        <div class="tab" data-tab="courses">
-            <i class="fas fa-book"></i>
-            <span>Courses</span>
-        </div>
-        <div class="tab" data-tab="articles">
-            <i class="fas fa-file-alt"></i>
-            <span>Articles</span>
-        </div>
-        <div class="tab" data-tab="pdfs">
-            <i class="fas fa-file-pdf"></i>
-            <span>PDF Resources</span>
-        </div>
-        <div class="tab" id="admin-tab-btn" data-tab="admin">
-            <i class="fas fa-lock"></i>
-            <span>Admin Panel</span>
-        </div>
-    </div>
-</aside>
+        <aside class="sidebar">
+            <div class="tabs">
+                <div class="tab active" data-tab="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="tab" data-tab="courses">
+                    <i class="fas fa-book"></i>
+                    <span>Courses</span>
+                </div>
+                <div class="tab" data-tab="articles">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Articles</span>
+                </div>
+                <div class="tab" data-tab="pdfs">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>PDF Resources</span>
+                </div>
+                <div class="tab" id="projects-tab-btn" data-tab="projects">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Project Ideas</span>
+                </div>
+                <div class="tab" id="admin-tab-btn" data-tab="admin">
+                    <i class="fas fa-lock"></i>
+                    <span>Admin Panel</span>
+                </div>
+            </div>
+        </aside>
 
         <!-- Content Area -->
         <main class="content-area">
@@ -61,11 +67,13 @@
                             <form id="login-form" autocomplete="off">
                                 <div class="form-group">
                                     <label for="login-username">Username</label>
-                                    <input type="text" id="login-username" class="form-control input-lg" placeholder="Enter username" autocomplete="username" required>
+                                    <input type="text" id="login-username" class="form-control input-lg"
+                                        placeholder="Enter username" autocomplete="username" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="login-password">Password</label>
-                                    <input type="password" id="login-password" class="form-control input-lg" placeholder="Enter password" autocomplete="current-password" required>
+                                    <input type="password" id="login-password" class="form-control input-lg"
+                                        placeholder="Enter password" autocomplete="current-password" required>
                                 </div>
                                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                                     <i class="fas fa-lock"></i> Login
@@ -82,23 +90,28 @@
                             <form id="register-form" autocomplete="off">
                                 <div class="form-group">
                                     <label for="register-username">Username</label>
-                                    <input type="text" id="register-username" class="form-control input-lg" placeholder="Choose username" autocomplete="username" required>
+                                    <input type="text" id="register-username" class="form-control input-lg"
+                                        placeholder="Choose username" autocomplete="username" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="register-email">Email</label>
-                                    <input type="email" id="register-email" class="form-control input-lg" placeholder="Enter email" autocomplete="email" required>
+                                    <input type="email" id="register-email" class="form-control input-lg"
+                                        placeholder="Enter email" autocomplete="email" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="register-firstname">First Name</label>
-                                    <input type="text" id="register-firstname" class="form-control input-lg" placeholder="First name" autocomplete="given-name" required>
+                                    <input type="text" id="register-firstname" class="form-control input-lg"
+                                        placeholder="First name" autocomplete="given-name" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="register-lastname">Last Name</label>
-                                    <input type="text" id="register-lastname" class="form-control input-lg" placeholder="Last name" autocomplete="family-name" required>
+                                    <input type="text" id="register-lastname" class="form-control input-lg"
+                                        placeholder="Last name" autocomplete="family-name" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="register-password">Password</label>
-                                    <input type="password" id="register-password" class="form-control input-lg" placeholder="Create password" autocomplete="new-password" required>
+                                    <input type="password" id="register-password" class="form-control input-lg"
+                                        placeholder="Create password" autocomplete="new-password" required>
                                 </div>
                                 <button type="submit" class="btn btn-success" style="width: 100%;">
                                     <i class="fas fa-user-check"></i> Register
@@ -118,7 +131,7 @@
                         <h2 id="welcome-username">Welcome back!</h2>
                         <p id="welcome-message">You have 3 new resources this week.</p>
                     </div>
-                    
+
                     <div class="stats-container">
                         <div class="stat-card">
                             <div class="stat-icon">
@@ -135,11 +148,11 @@
                             <div class="stat-label">Learning Resources</div>
                         </div>
                     </div>
-                    
+
                     <div class="section-header">
                         <h2><i class="fas fa-book-open"></i> Recent Courses</h2>
                     </div>
-                    
+
                     <div class="grid" id="recent-courses-list"></div>
                 </div>
 
@@ -148,14 +161,15 @@
                     <div class="section-header">
                         <h2><i class="fas fa-book"></i> Courses</h2>
                     </div>
-                    
+
                     <div class="card">
                         <div class="card-header">Add New Course</div>
                         <div class="card-body">
                             <form id="add-course-form">
                                 <div class="form-group">
                                     <label for="course-title">Course Title</label>
-                                    <input type="text" id="course-title" class="form-control input-lg" placeholder="Enter course title" required>
+                                    <input type="text" id="course-title" class="form-control input-lg"
+                                        placeholder="Enter course title" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="course-type">Course Type</label>
@@ -166,7 +180,8 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="course-description">Description</label>
-                                    <textarea id="course-description" class="form-control textarea-lg" placeholder="Enter course description"></textarea>
+                                    <textarea id="course-description" class="form-control textarea-lg"
+                                        placeholder="Enter course description"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-plus-circle"></i> Add Course
@@ -174,11 +189,11 @@
                             </form>
                         </div>
                     </div>
-                    
+
                     <div class="section-header">
                         <h2><i class="fas fa-bookmark"></i> Available Courses</h2>
                     </div>
-                    
+
                     <div id="courses-list" class="grid"></div>
                 </div>
 
@@ -187,18 +202,20 @@
                     <div class="section-header">
                         <h2><i class="fas fa-file-alt"></i> Articles</h2>
                     </div>
-                    
+
                     <div class="card">
                         <div class="card-header">Create New Article</div>
                         <div class="card-body">
                             <form id="add-article-form">
                                 <div class="form-group">
                                     <label for="article-title">Article Title</label>
-                                    <input type="text" id="article-title" class="form-control input-lg" placeholder="Enter article title" required>
+                                    <input type="text" id="article-title" class="form-control input-lg"
+                                        placeholder="Enter article title" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="article-content">Content</label>
-                                    <textarea id="article-content" class="form-control textarea-lg" placeholder="Enter article content" required rows="6"></textarea>
+                                    <textarea id="article-content" class="form-control textarea-lg"
+                                        placeholder="Enter article content" required rows="6"></textarea>
                                 </div>
                                 <div class="form-group">
                                     <label for="article-course-id">Select Course</label>
@@ -212,11 +229,11 @@
                             </form>
                         </div>
                     </div>
-                    
+
                     <div class="section-header">
                         <h2><i class="fas fa-newspaper"></i> Latest Articles</h2>
                     </div>
-                    
+
                     <div id="articles-grouped-list"></div>
                 </div>
 
@@ -225,14 +242,15 @@
                     <div class="section-header">
                         <h2><i class="fas fa-file-pdf"></i> PDF Resources</h2>
                     </div>
-                    
+
                     <div class="card">
                         <div class="card-header">Upload PDF Resource</div>
                         <div class="card-body">
                             <form id="upload-pdf-form" enctype="multipart/form-data">
                                 <div class="form-group">
                                     <label for="pdf-file">Select PDF File</label>
-                                    <input type="file" id="pdf-file" class="form-control input-lg" accept="application/pdf" required>
+                                    <input type="file" id="pdf-file" class="form-control input-lg"
+                                        accept="application/pdf" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="pdf-course-id">Select Course</label>
@@ -246,12 +264,49 @@
                             </form>
                         </div>
                     </div>
-                    
+
                     <div class="section-header">
                         <h2><i class="fas fa-archive"></i> PDF Library</h2>
                     </div>
-                    
+
                     <div id="pdfs-list" class="grid"></div>
+                </div>
+
+                <!-- Project Ideas Tab -->
+                <div class="tab-content" id="projects-tab">
+                    <div class="section-header">
+                        <h2><i class="fas fa-lightbulb"></i> Project Ideas For You</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Tell us what technologies you know</div>
+                        <div class="card-body">
+                            <form id="project-tech-form">
+                                <div class="form-group">
+                                    <label for="project-tech-input">Technologies (comma separated)</label>
+                                    <input type="text" id="project-tech-input" class="form-control input-lg"
+                                        placeholder="e.g. Java, Spring Boot, React, HTML, CSS" required>
+                                </div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-search"></i> Find Projects
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="section-header">
+                        <h2><i class="fas fa-list"></i> Suggested Projects</h2>
+                    </div>
+                    <div id="suggested-projects-list" class="grid"></div>
+                    <!-- Project Roadmap Modal -->
+                    <div id="project-roadmap-modal" class="modal">
+                        <div class="modal-content" style="max-width:650px;">
+                            <span class="close-modal" id="close-project-roadmap-modal">&times;</span>
+                            <h3 id="modal-project-title"></h3>
+                            <div id="modal-project-summary"></div>
+                            <div id="modal-project-technologies"></div>
+                            <div id="modal-project-extratechs"></div>
+                            <div id="modal-project-roadmap"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Admin Section -->
@@ -268,45 +323,91 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <div class="section-header">
                             <h2><i class="fas fa-user-cog"></i> User Management</h2>
                         </div>
-                        
+
                         <div class="card">
                             <div class="card-body">
                                 <div id="users-list" class="grid"></div>
                             </div>
                         </div>
-                        
+
                         <div class="section-header">
                             <h2><i class="fas fa-exclamation-triangle"></i> Reported Content</h2>
                         </div>
-                        
+
                         <div class="card">
                             <div class="card-body">
                                 <div id="reported-list" class="grid"></div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Article Modal -->
-                <div id="article-modal" class="modal">
-                    <div class="modal-content">
-                        <span class="close-modal" id="close-article-modal">&times;</span>
-                        <h3 id="modal-article-title"></h3>
-                        <div id="modal-article-meta"></div>
-                        <p id="modal-article-content"></p>
+                        <div class="section-header">
+                            <h2><i class="fas fa-lightbulb"></i> Add Project Idea (Admin)</h2>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">Manual Entry</div>
+                            <div class="card-body">
+                                <form id="add-project-form">
+                                    <div class="form-group">
+                                        <label for="project-title">Project Title</label>
+                                        <input type="text" id="project-title" class="form-control input-lg" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="project-summary">Summary</label>
+                                        <textarea id="project-summary" class="form-control" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="project-technologies">Technologies (comma separated)</label>
+                                        <input type="text" id="project-technologies" class="form-control input-lg"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="project-roadmap">Roadmap Steps (one per line)</label>
+                                        <textarea id="project-roadmap" class="form-control" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-plus-circle"></i> Add Project
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">Import from GitHub</div>
+                            <div class="card-body">
+                                <form id="import-project-form">
+                                    <div class="form-group">
+                                        <label for="github-url">GitHub Repo URL</label>
+                                        <input type="text" id="github-url" class="form-control input-lg"
+                                            placeholder="https://github.com/owner/repo" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-info">
+                                        <i class="fab fa-github"></i> Import Project
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Course Articles Modal -->
-                <div id="course-articles-modal" class="modal">
-                    <div class="modal-content" style="max-width:700px;">
-                        <span class="close-modal" id="close-course-articles-modal">&times;</span>
-                        <h3 id="modal-course-title"></h3>
-                        <div id="modal-course-articles-list"></div>
+                    <!-- Article Modal -->
+                    <div id="article-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close-modal" id="close-article-modal">&times;</span>
+                            <h3 id="modal-article-title"></h3>
+                            <div id="modal-article-meta"></div>
+                            <p id="modal-article-content"></p>
+                        </div>
+                    </div>
+
+                    <!-- Course Articles Modal -->
+                    <div id="course-articles-modal" class="modal">
+                        <div class="modal-content" style="max-width:700px;">
+                            <span class="close-modal" id="close-course-articles-modal">&times;</span>
+                            <h3 id="modal-course-title"></h3>
+                            <div id="modal-course-articles-list"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -314,4 +415,5 @@
     </div>
     <script src="app.js"></script>
 </body>
+
 </html>

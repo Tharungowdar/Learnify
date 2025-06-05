@@ -83,7 +83,7 @@ async function login(username, password) {
         });
 
         const data = await handleApiResponse(response, 'Login failed');
-        
+
         token = data.token;
         currentUser = {
             username,
@@ -153,7 +153,8 @@ async function loadInitialData() {
             loadPdfs(),
             populateCourseSelects(),
             updateDashboardStats(),
-            updateDashboardRecentCourses()
+            updateDashboardRecentCourses(),
+            // Optionally, load all projects at startup
         ]);
     } catch (error) {
         console.error('Error loading initial data:', error);
@@ -165,10 +166,10 @@ async function loadCourses() {
     try {
         const response = await fetch(`${API}/courses`, { headers: authHeaders() });
         const courses = await handleApiResponse(response, 'Failed to load courses');
-        
+
         const list = document.getElementById("courses-list");
         if (!list) return;
-        
+
         list.innerHTML = "";
         courses.forEach(course => {
             const courseCard = document.createElement('div');
@@ -195,7 +196,7 @@ async function populateCourseSelects() {
     try {
         const response = await fetch(`${API}/courses`, { headers: authHeaders() });
         const courses = await handleApiResponse(response, 'Failed to load courses');
-        
+
         ['article-course-id', 'pdf-course-id'].forEach(id => {
             const select = document.getElementById(id);
             if (select) {
@@ -425,14 +426,152 @@ function closeArticleModal() {
 }
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("close-article-modal").addEventListener('click', closeArticleModal);
-    document.getElementById("article-modal").addEventListener('click', function(e) {
+    document.getElementById("article-modal").addEventListener('click', function (e) {
         if (e.target === this) closeArticleModal();
     });
     // Course articles modal
     document.getElementById("close-course-articles-modal").addEventListener('click', closeCourseArticlesModal);
-    document.getElementById("course-articles-modal").addEventListener('click', function(e) {
+    document.getElementById("course-articles-modal").addEventListener('click', function (e) {
         if (e.target === this) closeCourseArticlesModal();
     });
+});
+
+// ---- Project Ideas Tab Logic ----
+async function loadSuggestedProjects(techs) {
+    try {
+        const response = await fetch(`${API}/projects/suggest`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...(token && { Authorization: `Bearer ${token}` }) },
+            body: JSON.stringify(techs)
+        });
+        const projects = await handleApiResponse(response, 'Failed to fetch project ideas');
+        renderSuggestedProjects(projects, techs);
+    } catch (error) {
+        showMessage(error.message || 'Failed to fetch project ideas.');
+    }
+}
+
+function renderSuggestedProjects(projects, userTechs) {
+    const list = document.getElementById("suggested-projects-list");
+    list.innerHTML = "";
+    if (!projects.length) {
+        list.innerHTML = "<div style='color:#888;padding:14px;'>No projects found for your technology stack. Try adding more technologies!</div>";
+        return;
+    }
+    projects.forEach(project => {
+        const card = document.createElement('div');
+        card.className = 'item-card project-card';
+        card.style.cursor = 'pointer';
+        card.innerHTML = `
+            <h3><i class="fas fa-lightbulb"></i> ${project.title}</h3>
+            <p>${project.summary || 'No summary'}</p>
+            <div class="meta">
+                <span>Tech: ${project.technologies.join(', ')}</span>
+            </div>
+            <button class="btn btn-info btn-sm" style="margin-top:10px;">View Roadmap</button>
+        `;
+        card.querySelector('button').addEventListener('click', () => showProjectRoadmapModal(project));
+        list.appendChild(card);
+    });
+}
+
+function showProjectRoadmapModal(project) {
+    document.getElementById("modal-project-title").innerHTML = `
+        <span style="font-size:1.3rem;font-weight:600;color:#1976D2;">
+            <i class="fas fa-lightbulb" style="margin-right:6px;"></i>${project.title}
+        </span>
+    `;
+    document.getElementById("modal-project-summary").innerHTML = `
+        <div style="margin:10px 0 15px;color:#444;">${project.summary}</div>
+    `;
+    document.getElementById("modal-project-technologies").innerHTML = `
+        <div style="margin-bottom:8px;"><b>Required Technologies:</b> 
+            <span style="color:#388e3c;">${project.technologies.join(', ')}</span>
+        </div>
+    `;
+    document.getElementById("modal-project-extratechs").innerHTML = project.extraTechnologies && project.extraTechnologies.length
+      ? `<div style="margin-bottom:8px;"><b>You need to learn:</b> 
+            <span style="color:#e53935;">${project.extraTechnologies.join(', ')}</span>
+        </div>`
+      : `<div style="margin-bottom:8px;color:#388e3c;"><i class="fas fa-check"></i> You know all required technologies!</div>`;
+    document.getElementById("modal-project-roadmap").innerHTML = `
+        <div style="margin:12px 0;">
+            <b>Project Roadmap:</b>
+            <ol style="padding-left:22px;margin-top:6px;">
+                ${project.roadmap.map(step => `<li style="margin-bottom:6px;">${step}</li>`).join('')}
+            </ol>
+        </div>
+    `;
+    // Show modal
+    const modal = document.getElementById("project-roadmap-modal");
+    modal.classList.add('active');
+    modal.classList.remove('hidden');
+    modal.style.animation = "modalFadeIn 0.25s";
+}
+function closeProjectRoadmapModal() {
+    const modal = document.getElementById("project-roadmap-modal");
+    modal.classList.remove('active');
+    modal.classList.add('hidden');
+    modal.style.animation = "";
+}
+
+// ---- Admin Add Project ----
+document.getElementById("add-project-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!token || userRole !== 'ADMIN') {
+        showMessage("Only admins can add projects.");
+        return;
+    }
+    const title = document.getElementById("project-title").value.trim();
+    const summary = document.getElementById("project-summary").value.trim();
+    const technologies = document.getElementById("project-technologies").value.split(',').map(t => t.trim()).filter(Boolean);
+    const roadmap = document.getElementById("project-roadmap").value.split('\n').map(l => l.trim()).filter(Boolean);
+    try {
+        const response = await fetch(`${API}/projects`, {
+            method: "POST",
+            headers: authHeaders("application/json"),
+            body: JSON.stringify({ title, summary, technologies, roadmap })
+        });
+        await handleApiResponse(response, 'Failed to add project');
+        showMessage('Project added!', false);
+        document.getElementById("add-project-form").reset();
+
+        // --- Trigger project ideas refresh ---
+        const techInput = document.getElementById("project-tech-input")?.value.trim() || "";
+        const techs = techInput ? techInput.split(',').map(t => t.trim()).filter(Boolean) : [];
+        await loadSuggestedProjects(techs);
+
+    } catch (error) {
+        showMessage(error.message || 'Failed to add project.');
+    }
+});
+
+// ---- Admin Import Project from GitHub ----
+document.getElementById("import-project-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!token || userRole !== 'ADMIN') {
+        showMessage("Only admins can import projects.");
+        return;
+    }
+    const url = document.getElementById("github-url").value.trim();
+    try {
+        const response = await fetch(`${API}/projects/import`, {
+            method: "POST",
+            headers: authHeaders("application/json"),
+            body: JSON.stringify({ url })
+        });
+        await handleApiResponse(response, 'Failed to import project');
+        showMessage('Project imported from GitHub!', false);
+        document.getElementById("import-project-form").reset();
+
+        // --- Trigger project ideas refresh ---
+        const techInput = document.getElementById("project-tech-input")?.value.trim() || "";
+        const techs = techInput ? techInput.split(',').map(t => t.trim()).filter(Boolean) : [];
+        await loadSuggestedProjects(techs);
+
+    } catch (error) {
+        showMessage(error.message || 'Failed to import project.');
+    }
 });
 
 // ---- Event Listeners ----
@@ -459,6 +598,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // If articles tab, re-render grouped articles
             if (tabId === 'articles') {
                 renderGroupedArticles();
+            }
+            // If projects tab, refresh with user input
+            if (tabId === 'projects') {
+                const techInput = document.getElementById("project-tech-input")?.value.trim() || "";
+                const techs = techInput ? techInput.split(',').map(t => t.trim()).filter(Boolean) : [];
+                loadSuggestedProjects(techs);
             }
         });
     });
@@ -499,6 +644,31 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             showMessage(error.message || 'Registration failed. Please try again.');
         }
+    });
+
+    // Project Ideas tab: user tech input
+    document.getElementById("projects-tab-btn")?.addEventListener('click', () => {
+        document.getElementById("project-tech-input").value = "";
+        document.getElementById("suggested-projects-list").innerHTML =
+            "<div style='color:#888;padding:14px;'>Enter your technologies to get project ideas!</div>";
+    });
+
+    // Project tech form
+    document.getElementById("project-tech-form")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const techInput = document.getElementById("project-tech-input").value.trim();
+        if (!techInput) {
+            showMessage("Please enter at least one technology.");
+            return;
+        }
+        const techs = techInput.split(',').map(t => t.trim()).filter(Boolean);
+        await loadSuggestedProjects(techs);
+    });
+
+    // Project roadmap modal close
+    document.getElementById("close-project-roadmap-modal")?.addEventListener('click', closeProjectRoadmapModal);
+    document.getElementById("project-roadmap-modal")?.addEventListener('click', function (e) {
+        if (e.target === this) closeProjectRoadmapModal();
     });
 
     // Logout
@@ -571,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const file = document.getElementById("pdf-file").files[0];
         const courseId = document.getElementById("pdf-course-id").value;
-        
+
         if (!file) {
             showMessage('Please select a PDF file to upload.');
             return;
@@ -584,26 +754,25 @@ document.addEventListener('DOMContentLoaded', () => {
             showMessage('Please select a course for the PDF.');
             return;
         }
-        
+
         try {
             const formData = new FormData();
             formData.append("file", file);
             formData.append("courseId", courseId);
-            
+
             const response = await fetch(`${API}/pdf/upload`, {
                 method: "POST",
                 headers: {
                     'Authorization': `Bearer ${token}`
-                    // Do NOT set Content-Type header for multipart/form-data
                 },
                 body: formData
             });
-            
+
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(errorText || 'Failed to upload PDF');
             }
-            
+
             await loadPdfs();
             document.getElementById("upload-pdf-form").reset();
             showMessage('PDF uploaded successfully!', false);
