@@ -195,6 +195,8 @@
                     </div>
 
                     <div id="courses-list" class="grid"></div>
+                    <!-- Beautiful Articles for course shown here when a course is clicked -->
+                    <div id="course-articles-in-courses-tab" class="hidden"></div>
                 </div>
 
                 <!-- Articles Tab -->
@@ -235,6 +237,25 @@
                     </div>
 
                     <div id="articles-grouped-list"></div>
+                    
+                    <!-- Article Modal (only for articles tab) -->
+                    <div id="article-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close-modal" id="close-article-modal">&times;</span>
+                            <h3 id="modal-article-title"></h3>
+                            <div id="modal-article-meta"></div>
+                            <p id="modal-article-content"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Course Articles Modal (only for article tab, not for courses tab) -->
+                    <div id="course-articles-modal" class="modal">
+                        <div class="modal-content" style="max-width:700px;">
+                            <span class="close-modal" id="close-course-articles-modal">&times;</span>
+                            <h3 id="modal-course-title"></h3>
+                            <div id="modal-course-articles-list"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- PDFs Tab -->
@@ -318,6 +339,18 @@
                                 <button id="load-users-btn" class="btn btn-warning">
                                     <i class="fas fa-users"></i> Load Users
                                 </button>
+                                <button id="load-courses-btn" class="btn btn-info">
+                                    <i class="fas fa-book"></i> Load Courses
+                                </button>
+                                <button id="load-articles-btn" class="btn btn-primary">
+                                    <i class="fas fa-file-alt"></i> Load Articles
+                                </button>
+                                <button id="load-pdfs-btn" class="btn btn-success">
+                                    <i class="fas fa-file-pdf"></i> Load PDFs
+                                </button>
+                                <button id="load-projects-btn" class="btn btn-lightbulb">
+                                    <i class="fas fa-lightbulb"></i> Load Projects
+                                </button>
                                 <button id="load-reported-btn" class="btn btn-danger">
                                     <i class="fas fa-flag"></i> Load Reported PDFs
                                 </button>
@@ -327,17 +360,51 @@
                         <div class="section-header">
                             <h2><i class="fas fa-user-cog"></i> User Management</h2>
                         </div>
-
                         <div class="card">
                             <div class="card-body">
                                 <div id="users-list" class="grid"></div>
                             </div>
                         </div>
 
+                        <div id="all-courses-list" class="section-header">
+                            <h2><i class="fas fa-book"></i> Course Management</h2>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="admin-courses-list" class="grid"></div>
+                            </div>
+                        </div>
+
+                        <div id="all-articles-list" class="section-header">
+                            <h2><i class="fas fa-file-alt"></i> Article Management</h2>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="admin-articles-list" class="grid"></div>
+                            </div>
+                        </div>
+
+                        <div id="all-pdfs-list" class="section-header">
+                            <h2><i class="fas fa-file-pdf"></i> PDF Management</h2>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="admin-pdfs-list" class="grid"></div>
+                            </div>
+                        </div>
+
+                        <div id="all-projects-list" class="section-header">
+                            <h2><i class="fas fa-lightbulb"></i> Project Management</h2>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="admin-projects-list" class="grid"></div>
+                            </div>
+                        </div>
+
                         <div class="section-header">
                             <h2><i class="fas fa-exclamation-triangle"></i> Reported Content</h2>
                         </div>
-
                         <div class="card">
                             <div class="card-body">
                                 <div id="reported-list" class="grid"></div>
@@ -390,25 +457,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Article Modal -->
-                    <div id="article-modal" class="modal">
-                        <div class="modal-content">
-                            <span class="close-modal" id="close-article-modal">&times;</span>
-                            <h3 id="modal-article-title"></h3>
-                            <div id="modal-article-meta"></div>
-                            <p id="modal-article-content"></p>
-                        </div>
-                    </div>
-
-                    <!-- Course Articles Modal -->
-                    <div id="course-articles-modal" class="modal">
-                        <div class="modal-content" style="max-width:700px;">
-                            <span class="close-modal" id="close-course-articles-modal">&times;</span>
-                            <h3 id="modal-course-title"></h3>
-                            <div id="modal-course-articles-list"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </main>
@@ -417,3 +465,5 @@
 </body>
 
 </html>
+
+

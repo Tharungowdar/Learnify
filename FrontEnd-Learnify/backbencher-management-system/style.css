@@ -930,6 +930,120 @@ textarea.textarea-lg {
     }
 }
 
+/* Add/replace these styles for the course articles beautiful UI */
+#course-articles-in-courses-tab {
+    transition: all 0.3s ease;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(67,97,238,0.10);
+    margin-top: 32px;
+    margin-bottom: 36px;
+    background: #f8fafd;
+    padding: 0 0 32px 0;
+}
+
+#course-articles-in-courses-tab .section-header {
+    margin: 0;
+    background: linear-gradient(90deg, #4361ee 0%, #4cc9f0 100%);
+    color: #fff;
+    border-radius: 18px 18px 0 0;
+    padding: 22px 36px 16px 36px;
+    box-shadow: 0 2px 8px rgba(67,97,238,0.07);
+    border-bottom: 1px solid #e3e7f7;
+}
+
+#course-articles-list-inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 22px;
+    padding: 32px 36px 0 36px;
+}
+
+.course-article-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px #4361ee10;
+    border-left: 5px solid #4cc9f0;
+    padding: 24px 22px 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform 0.22s cubic-bezier(.4,1.8,.5,1), box-shadow 0.22s;
+    cursor: pointer;
+    position: relative;
+    min-height: 180px;
+}
+
+.course-article-card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 8px 24px #1976d233;
+    border-left: 5px solid #4361ee;
+}
+
+.course-article-title {
+    font-size: 1.13rem;
+    font-weight: 700;
+    color: #4361ee;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.course-article-content-preview {
+    color: #333b55;
+    font-size: 1.01rem;
+    line-height: 1.6;
+    flex: 1;
+    margin-bottom: 7px;
+}
+
+.course-article-meta {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 5px;
+}
+
+.course-article-meta span {
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 12px;
+    padding: 4px 13px;
+    font-weight: 500;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.course-article-card .fa-file-alt {
+    color: #ffa726;
+    font-size: 1.1rem;
+}
+
+#close-course-articles-list {
+    background: #fff;
+    color: #4361ee;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 7px 18px;
+    font-size: 1rem;
+    border: 1px solid #4cc9f0;
+    transition: 0.19s;
+    float: right;
+    margin-left: 22px;
+    margin-top: -2px;
+}
+
+#close-course-articles-list:hover {
+    background: #f3f7ff;
+    color: #f72585;
+    border: 1.5px solid #f72585;
+}
+
 @media (max-width: 768px) {
     .grid {
         grid-template-columns: 1fr;
@@ -949,5 +1063,81 @@ textarea.textarea-lg {
 
     header {
         padding: 0 10px;
+    }
+}
+
+/* ... keep your previous CSS ... */
+
+/* Admin delete button styles */
+.action-buttons .btn.btn-danger {
+    background: linear-gradient(135deg, #f72585 0%, #ff3a8d 100%);
+    color: white;
+    margin-left: 10px;
+}
+.action-buttons .btn.btn-danger:hover {
+    background: linear-gradient(135deg, #b71c1c 0%, #f44336 100%);
+    color: white;
+    transform: translateY(-2px) scale(1.04);
+}
+
+.action-buttons .btn.btn-info,
+.action-buttons .btn.btn-success,
+.action-buttons .btn.btn-warning,
+.action-buttons .btn.btn-primary,
+.action-buttons .btn.btn-lightbulb {
+    margin-left: 10px;
+}
+
+/* Admin management grids */
+#admin-courses-list .item-card,
+#admin-articles-list .item-card,
+#admin-pdfs-list .item-card,
+#admin-projects-list .item-card {
+    border-left: 5px solid #42a5f5;
+    box-shadow: 0 2px 12px #1976d222;
+    margin-bottom: 8px;
+    transition: box-shadow 0.22s, transform 0.22s;
+}
+
+#admin-courses-list .item-card:hover,
+#admin-articles-list .item-card:hover,
+#admin-pdfs-list .item-card:hover,
+#admin-projects-list .item-card:hover {
+    box-shadow: 0 8px 20px #1976d244;
+    transform: translateY(-3px) scale(1.03);
+    border-left: 5px solid #f72585;
+}
+
+/* Make delete button always visible for admin lists */
+#admin-courses-list .delete-btn,
+#admin-articles-list .delete-btn,
+#admin-pdfs-list .delete-btn,
+#admin-projects-list .delete-btn,
+#users-list .delete-btn {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+    background: #f72585;
+    color: #fff;
+    border-radius: 8px;
+    padding: 6px 15px;
+    font-size: 0.97rem;
+    font-weight: 600;
+    border: none;
+    transition: 0.2s;
+}
+#admin-courses-list .delete-btn:hover,
+#admin-articles-list .delete-btn:hover,
+#admin-pdfs-list .delete-btn:hover,
+#admin-projects-list .delete-btn:hover,
+#users-list .delete-btn:hover {
+    background: #b71c1c;
+    color: #fff;
+    transform: scale(1.07);
+}
+
+@media (max-width: 700px) {
+    #admin-courses-list, #admin-articles-list, #admin-pdfs-list, #admin-projects-list {
+        grid-template-columns: 1fr;
     }
 }

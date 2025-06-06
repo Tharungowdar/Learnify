@@ -1,3 +1,4 @@
+
 // =====================
 // Constants and Globals
 // =====================
@@ -154,7 +155,6 @@ async function loadInitialData() {
             populateCourseSelects(),
             updateDashboardStats(),
             updateDashboardRecentCourses(),
-            // Optionally, load all projects at startup
         ]);
     } catch (error) {
         console.error('Error loading initial data:', error);
@@ -173,7 +173,8 @@ async function loadCourses() {
         list.innerHTML = "";
         courses.forEach(course => {
             const courseCard = document.createElement('div');
-            courseCard.className = 'item-card';
+            courseCard.className = 'item-card dashboard-course-card';
+            courseCard.style.cursor = 'pointer';
             courseCard.innerHTML = `
                 <h3><i class="fas fa-book"></i> ${course.title}</h3>
                 <p>${course.description || 'No description available'}</p>
@@ -183,9 +184,14 @@ async function loadCourses() {
                     <span>Created: ${course.createdAt ? new Date(course.createdAt).toLocaleDateString() : ''}</span>
                 </div>
             `;
+            // Show articles for this course in the courses tab only
+            courseCard.addEventListener('click', () => {
+                if (isTabActive('courses')) {
+                    showCourseArticlesInCoursesTab(course);
+                }
+            });
             list.appendChild(courseCard);
         });
-        // For dashboard stats
         window._coursesData = courses;
     } catch (error) {
         showMessage(error.message);
@@ -227,7 +233,6 @@ function groupArticlesByCourse(articles, courses) {
     return { grouped, courseMap };
 }
 
-// ---- Articles Tab: Grouped Rendering ----
 function renderGroupedArticles() {
     const articles = window._articlesData || [];
     const courses = window._coursesData || [];
@@ -237,7 +242,6 @@ function renderGroupedArticles() {
     if (!groupedList) return;
     groupedList.innerHTML = "";
 
-    // Show all courses with articles, plus 'No Course' group if any.
     Object.keys(grouped).forEach(courseId => {
         const course = courseMap[courseId];
         const groupDiv = document.createElement('div');
@@ -265,7 +269,11 @@ function renderGroupedArticles() {
                     <span>By: ${a.author?.username || 'N/A'}</span>
                 </div>
             `;
-            articleCard.addEventListener('click', () => showArticleModal(a));
+            articleCard.addEventListener('click', (event) => {
+                if (isTabActive('articles')) {
+                    showArticleModal(a);
+                }
+            });
             listDiv.appendChild(articleCard);
         });
 
@@ -273,7 +281,6 @@ function renderGroupedArticles() {
     });
 }
 
-// ---- Articles Loader (overrides default) ----
 async function loadArticles() {
     try {
         const response = await fetch(`${API}/articles`, { headers: authHeaders() });
@@ -285,7 +292,6 @@ async function loadArticles() {
     }
 }
 
-// ---- Dashboard Courses: Click to Show Articles Modal ----
 async function updateDashboardRecentCourses() {
     let courses = window._coursesData;
     if (!courses) {
@@ -312,16 +318,85 @@ async function updateDashboardRecentCourses() {
                     <span>Created: ${course.createdAt ? new Date(course.createdAt).toLocaleDateString() : ''}</span>
                 </div>
             `;
-            // Add click to show articles for that course
-            courseCard.addEventListener('click', () => showCourseArticlesModal(course));
+            courseCard.addEventListener('click', () => {
+                if (isTabActive('articles')) {
+                    showCourseArticlesModal(course);
+                }
+            });
             recentList.appendChild(courseCard);
         });
     }
 }
 
-// ---- Show Course Articles Modal ----
+// Show all articles for a course in the courses tab (not a modal)
+function showCourseArticlesInCoursesTab(course) {
+    const articles = (window._articlesData || []).filter(a => a.course?.id === course.id);
+
+    const container = document.getElementById("course-articles-in-courses-tab");
+    if (!container) return;
+    container.classList.remove('hidden');
+    container.innerHTML = `
+        <div class="section-header" style="margin-top:24px;">
+            <h3>
+                <i class="fas fa-newspaper"></i> Articles for "${course.title}" (${course.type})
+                <button class="btn btn-xs btn-secondary" id="close-course-articles-list" style="float:right;">Close</button>
+            </h3>
+        </div>
+        <div id="course-articles-list-inner"></div>
+    `;
+
+    const listDiv = container.querySelector('#course-articles-list-inner');
+    if (articles.length === 0) {
+        listDiv.innerHTML = "<div style='color:#888;padding:14px;'>No articles for this course.</div>";
+    } else {
+        articles.forEach(article => {
+            const articleCard = document.createElement('div');
+            articleCard.className = 'item-card article-card';
+            articleCard.style.marginBottom = "10px";
+            articleCard.innerHTML = `
+                <h3><i class="fas fa-file-alt"></i> ${article.title}</h3>
+                <p>${article.content.length > 100 ? article.content.slice(0, 100) + '...' : article.content}</p>
+                <div class="meta">
+                    <span>ID: ${article.id}</span>
+                    <span>By: ${article.author?.username || 'N/A'}</span>
+                </div>
+            `;
+            listDiv.appendChild(articleCard);
+        });
+    }
+    container.querySelector("#close-course-articles-list").onclick = () => {
+        container.classList.add('hidden');
+        container.innerHTML = '';
+    }
+}
+
+function isTabActive(tabName) {
+    const tabContent = document.getElementById(`${tabName}-tab`);
+    return tabContent && tabContent.classList.contains('active');
+}
+
+/* ---- Fix for multiple event listeners and duplicate code ---- */
+function setupAdminButtons() {
+    const adminBtnIds = [
+        { id: "load-users-btn", fn: loadAdminUsers },
+        { id: "load-courses-btn", fn: loadAllCourses },
+        { id: "load-articles-btn", fn: loadAdminArticles },
+        { id: "load-pdfs-btn", fn: loadAdminPdfs },
+        { id: "load-projects-btn", fn: loadAllProjects },
+        { id: "load-reported-btn", fn: loadReportedContent }
+    ];
+    adminBtnIds.forEach(({ id, fn }) => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.onclick = () => {
+                if (!token || userRole !== 'ADMIN') return showMessage("Unauthorized access");
+                fn();
+            };
+        }
+    });
+}
+
 function showCourseArticlesModal(course) {
-    // Get all articles for this course
     const articles = (window._articlesData || []).filter(a => a.course?.id === course.id);
 
     document.getElementById("modal-course-title").innerHTML = `
@@ -347,7 +422,11 @@ function showCourseArticlesModal(course) {
                     <span>By: ${article.author?.username || 'N/A'}</span>
                 </div>
             `;
-            articleCard.addEventListener('click', () => showArticleModal(article));
+            articleCard.addEventListener('click', () => {
+                if (isTabActive('articles')) {
+                    showArticleModal(article);
+                }
+            });
             modalList.appendChild(articleCard);
         });
     }
@@ -356,7 +435,7 @@ function showCourseArticlesModal(course) {
     modal.classList.remove('hidden');
     modal.style.animation = "modalFadeIn 0.25s";
 }
-// ---- Hide Course Articles Modal ----
+
 function closeCourseArticlesModal() {
     const modal = document.getElementById("course-articles-modal");
     modal.classList.remove('active');
@@ -364,16 +443,12 @@ function closeCourseArticlesModal() {
     modal.style.animation = "";
 }
 
-// ---- Article Modal Logic (Updated UI) ----
 function showArticleModal(article) {
-    // Set modal content with enhanced HTML and styles
     document.getElementById("modal-article-title").innerHTML = `
         <span style="font-size:1.5rem;font-weight:600;color:#4A90E2;">
             <i class="fas fa-file-alt" style="margin-right:6px;color:#FFA726;"></i>${article.title}
         </span>
     `;
-
-    // Beautiful meta badges
     document.getElementById("modal-article-meta").innerHTML = `
         <div class="meta" style="margin:12px 0 16px;display: flex;flex-wrap:wrap;gap:8px;">
             <span class="badge" style="background:#e3f2fd;color:#1976D2;padding:4px 10px;border-radius:16px;">
@@ -390,8 +465,6 @@ function showArticleModal(article) {
             </span>
         </div>
     `;
-
-    // Article content with better presentation
     document.getElementById("modal-article-content").innerHTML = `
         <div style="
             background: #fafbfc;
@@ -409,27 +482,29 @@ function showArticleModal(article) {
             ${article.content.replace(/\n/g, '<br>')}
         </div>
     `;
-
-    // Activate modal with fade-in animation
     const modal = document.getElementById("article-modal");
     modal.classList.add('active');
     modal.classList.remove('hidden');
     modal.style.animation = "modalFadeIn 0.25s";
 }
 
-// Clear animation when closing
 function closeArticleModal() {
     const modal = document.getElementById("article-modal");
     modal.classList.remove('active');
     modal.classList.add('hidden');
     modal.style.animation = "";
 }
+
+function isTabActive(tabName) {
+    const tabContent = document.getElementById(`${tabName}-tab`);
+    return tabContent && tabContent.classList.contains('active');
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("close-article-modal").addEventListener('click', closeArticleModal);
     document.getElementById("article-modal").addEventListener('click', function (e) {
         if (e.target === this) closeArticleModal();
     });
-    // Course articles modal
     document.getElementById("close-course-articles-modal").addEventListener('click', closeCourseArticlesModal);
     document.getElementById("course-articles-modal").addEventListener('click', function (e) {
         if (e.target === this) closeCourseArticlesModal();
@@ -782,14 +857,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ---- Admin Buttons ----
-    document.getElementById("load-users-btn")?.addEventListener("click", async () => {
-        if (!token || currentUser?.role !== 'ADMIN') {
-            showMessage("Unauthorized access");
-            return;
-        }
-        await loadAdminUsers();
-    });
-
     document.getElementById("load-reported-btn")?.addEventListener("click", async () => {
         if (!token || currentUser?.role !== 'ADMIN') {
             showMessage("Unauthorized access");
@@ -799,30 +866,191 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+document.getElementById("load-users-btn")?.addEventListener("click", async () => {
+    if (!token || currentUser?.role !== 'ADMIN') {
+        showMessage("Unauthorized access");
+        return;
+    }
+    await loadAdminUsers();
+});
+
+document.getElementById("load-courses-btn")?.addEventListener("click", async () => {
+    if (!token || currentUser?.role !== 'ADMIN') {
+        showMessage("Unauthorized access");
+        return;
+    }
+    await loadAllCourses();
+});
+
+document.getElementById("load-articles-btn")?.addEventListener("click", async () => {
+    if (!token || currentUser?.role !== 'ADMIN') {
+        showMessage("Unauthorized access");
+        return;
+    }
+    await loadAllArticles();
+});
+
+document.getElementById("load-pdfs-btn")?.addEventListener("click", async () => {
+    if (!token || currentUser?.role !== 'ADMIN') {
+        showMessage("Unauthorized access");
+        return;
+    }
+    await loadAllPdfs();
+});
+
+document.getElementById("load-projects-btn")?.addEventListener("click", async () => {
+    if (!token || currentUser?.role !== 'ADMIN') {
+        showMessage("Unauthorized access");
+        return;
+    }
+    await loadAllProjects();
+});
+
+document.getElementById("load-reported-btn")?.addEventListener("click", async () => {
+    if (!token || currentUser?.role !== 'ADMIN') {
+        showMessage("Unauthorized access");
+        return;
+    }
+    await loadReportedContent();
+});
+
+
 // ---- Admin Users ----
 async function loadAdminUsers() {
     try {
         const res = await fetch(`${API}/admin/dashboard`, { headers: authHeaders() });
         const data = await handleApiResponse(res, 'Failed to load users');
         const users = data.users || [];
-        const list = document.getElementById("users-list");
-        if (!list) return;
-        list.innerHTML = "";
-        users.forEach(u => {
-            const userCard = document.createElement('div');
-            userCard.className = 'item-card';
-            userCard.innerHTML = `
-                <h3><i class="fas fa-user"></i> ${u.username} ${u.role === "ADMIN" ? '<span style="color:#f44336;">(Admin)</span>' : ""}</h3>
-                <p>Email: ${u.email}</p>
-                <div class="meta">
-                    <span>Role: ${u.role}</span>
-                    <span>ID: ${u.id}</span>
-                </div>
-            `;
-            list.appendChild(userCard);
-        });
+        renderAdminUsers(users);
     } catch (error) {
         showMessage('Failed to load users. Please try again.');
+    }
+}
+
+function renderAdminUsers(users) {
+    const list = document.getElementById("users-list");
+    if (!list) return;
+    list.innerHTML = "";
+    users.forEach(u => {
+        const userCard = document.createElement('div');
+        userCard.className = 'item-card';
+        userCard.innerHTML = `
+            <h3><i class="fas fa-user"></i> ${u.username} ${u.role === "ADMIN" ? '<span style="color:#f44336;">(Admin)</span>' : ""}</h3>
+            <p>Email: ${u.email}</p>
+            <div class="meta">
+                <span>Role: ${u.role}</span>
+                <span>ID: ${u.id}</span>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-danger delete-user-btn" data-id="${u.id}">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        `;
+        list.appendChild(userCard);
+    });
+
+    // Delete user event
+    list.querySelectorAll('.delete-user-btn').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.getAttribute('data-id');
+            if (confirm("Are you sure you want to delete this user?")) {
+                try {
+                    await fetch(`${API}/admin/users/${id}`, {
+                        method: "DELETE",
+                        headers: authHeaders()
+                    });
+                    showMessage("User deleted.", false);
+                    btn.closest('.item-card').remove();
+                } catch {
+                    showMessage("Failed to delete user.");
+                }
+            }
+        };
+    });
+}
+
+// ---- Admin Courses ----
+
+
+// ---- Admin Articles ----
+async function loadAllArticles() {
+    try {
+        const response = await fetch(`${API}/articles`, {
+            method: "GET",
+            headers: authHeaders("application/json")
+        });
+        if (!response.ok) throw new Error("Failed to fetch articles");
+        const articles = await response.json();
+        const list = document.getElementById("all-articles-list");
+        if (!list) return;
+        list.innerHTML = "";
+        if (!Array.isArray(articles) || !articles.length) {
+            list.innerHTML = "<div style='color:#888;padding:14px;'>No articles found.</div>";
+            return;
+        }
+        articles.forEach(article => {
+            const card = document.createElement('div');
+            card.className = 'item-card article-card';
+            card.innerHTML = `
+                <h3><i class="fas fa-newspaper"></i> ${article.title}</h3>
+                <p>${article.summary || ''}</p>
+                <div class="meta">
+                    <span>By: ${article.author || 'N/A'}</span>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    } catch (error) {
+        showMessage(error.message || 'Failed to load articles.');
+    }
+}
+
+
+// ---- Admin PDFs ----
+async function loadAllPdfs() {
+    try {
+        const response = await fetch(`${API}/pdf`, {
+            method: "GET",
+            headers: authHeaders("application/json")
+        });
+        if (!response.ok) throw new Error("Failed to fetch PDFs");
+        const pdfs = await response.json();
+        const list = document.getElementById("all-pdfs-list");
+        if (!list) return;
+        list.innerHTML = "";
+        if (!Array.isArray(pdfs) || !pdfs.length) {
+            list.innerHTML = "<div style='color:#888;padding:14px;'>No PDFs found.</div>";
+            return;
+        }
+        pdfs.forEach(pdf => {
+            const courseLabel = pdf.course && pdf.course.title
+                ? `${pdf.course.title} (${pdf.course.id})`
+                : (pdf.course?.id ? `ID: ${pdf.course.id}` : "N/A");
+            const byLabel = pdf.user && pdf.user.username ? pdf.user.username : "N/A";
+            const pdfUrl = `${API}/pdf/file/${pdf.id}`;
+            const pdfCard = document.createElement('div');
+            pdfCard.className = 'item-card pdf-card';
+            pdfCard.style.cursor = 'pointer';
+            pdfCard.innerHTML = `
+                <h3>
+                    <i class="fas fa-file-pdf"></i>
+                    <span style="color:#f44336;text-decoration:underline;">${pdf.fileName}</span>
+                </h3>
+                <p>${pdf.extractedText ? pdf.extractedText.substring(0, 100) + '...' : ''}</p>
+                <div class="meta">
+                    <span>Course: ${courseLabel}</span>
+                    <span>ID: ${pdf.id}</span>
+                    <span>By: ${byLabel}</span>
+                </div>
+            `;
+            pdfCard.addEventListener('click', () => {
+                window.open(pdfUrl, '_blank');
+            });
+            list.appendChild(pdfCard);
+        });
+    } catch (error) {
+        showMessage(error.message || 'Failed to load PDFs.');
     }
 }
 
@@ -970,5 +1198,69 @@ async function loadPdfs() {
         window._pdfsData = pdfs;
     } catch (error) {
         showMessage(error.message);
+    }
+}
+
+async function loadAllCourses() {
+    try {
+        const response = await fetch(`${API}/courses`, {
+            method: "GET",
+            headers: authHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load courses");
+        const courses = await response.json();
+        const list = document.getElementById("all-courses-list");
+        if (!list) return;
+        list.innerHTML = "";
+        if (!Array.isArray(courses) || !courses.length) {
+            list.innerHTML = "<div style='color:#888;padding:14px;'>No courses found.</div>";
+            return;
+        }
+        courses.forEach(course => {
+            const card = document.createElement('div');
+            card.className = 'item-card course-card';
+            card.innerHTML = `
+                <h3><i class="fas fa-book"></i> ${course.title}</h3>
+                <p>${course.description || 'No description'}</p>
+                <div class="meta">
+                    <span>ID: ${course.id}</span>
+                    <span>Category: ${course.category || 'N/A'}</span>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    } catch (error) {
+        showMessage(error.message || 'Failed to load courses.');
+    }
+}
+
+// Add this function to fetch and render all projects for the admin:
+async function loadAllProjects() {
+    try {
+        const response = await fetch(`${API}/projects`, {
+            headers: authHeaders("application/json")
+        });
+        const projects = await handleApiResponse(response, 'Failed to load projects');
+        const list = document.getElementById("all-projects-list");
+        if (!list) return;
+        list.innerHTML = "";
+        if (!projects.length) {
+            list.innerHTML = "<div style='color:#888;padding:14px;'>No projects found.</div>";
+            return;
+        }
+        projects.forEach(project => {
+            const card = document.createElement('div');
+            card.className = 'item-card project-card';
+            card.innerHTML = `
+                <h3><i class="fas fa-lightbulb"></i> ${project.title}</h3>
+                <p>${project.summary || 'No summary'}</p>
+                <div class="meta">
+                    <span>Tech: ${project.technologies.join(', ')}</span>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    } catch (error) {
+        showMessage(error.message || 'Failed to load projects.');
     }
 }

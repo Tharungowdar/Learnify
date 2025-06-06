@@ -12,11 +12,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.jsp.spring.backbencher.ems.entity.User;
+import com.jsp.spring.backbencher.ems.repository.CourseRepository;
 import com.jsp.spring.backbencher.ems.repository.UserRepository;
 
 @Service
 public class UserService {
 
+    private final CourseRepository courseRepository;
+
+	@Autowired
     private final UserRepository userRepository;
 
     @Autowired
@@ -37,8 +41,9 @@ public class UserService {
 
     
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, CourseRepository courseRepository) {
         this.userRepository = userRepository;
+        this.courseRepository = courseRepository;
     }
     
     public Optional<User> findByUsername(String username) {
@@ -94,7 +99,9 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        Optional<User> optional = userRepository.findById(id);
+        User user = optional.get();
+        userRepository.delete(user);
     }
 
     public User deactivateUser(Long id) {
