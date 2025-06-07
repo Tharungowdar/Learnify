@@ -1,4 +1,3 @@
-
 // =====================
 // Constants and Globals
 // =====================
@@ -189,6 +188,9 @@ async function loadCourses() {
                 if (isTabActive('courses')) {
                     showCourseArticlesInCoursesTab(course);
                 }
+                if (document.getElementById('articles-tab').classList.contains('active')) {
+                    renderCourseFilterChips();
+                }
             });
             list.appendChild(courseCard);
         });
@@ -231,6 +233,102 @@ function groupArticlesByCourse(articles, courses) {
         grouped[courseId].push(article);
     });
     return { grouped, courseMap };
+}
+
+let _articleFilterCourseId = null;
+
+function renderCourseFilterChips() {
+    const courses = window._coursesData || [];
+    const chipsBar = document.getElementById("course-filter-chips");
+    if (!chipsBar) return;
+    chipsBar.innerHTML = "";
+    // "All" chip
+    const allChip = document.createElement("button");
+    allChip.className = "chip" + (_articleFilterCourseId ? "" : " active");
+    allChip.innerHTML = `<i class="fas fa-globe"></i> All`;
+    allChip.onclick = () => {
+        _articleFilterCourseId = null;
+        document.querySelectorAll(".chip").forEach(b => b.classList.remove('active'));
+        allChip.classList.add('active');
+        renderArticlesGrid();
+        document.getElementById("show-all-articles-btn").style.display = "none";
+    };
+    chipsBar.appendChild(allChip);
+    courses.forEach(course => {
+        const chip = document.createElement("button");
+        chip.className = "chip" + (_articleFilterCourseId === course.id ? " active" : "");
+        chip.innerHTML = `<i class="fas fa-book"></i> ${course.title}`;
+        chip.onclick = () => {
+            _articleFilterCourseId = course.id;
+            document.querySelectorAll(".chip").forEach(b => b.classList.remove('active'));
+            chip.classList.add('active');
+            renderArticlesGrid();
+            document.getElementById("show-all-articles-btn").style.display = "inline-flex";
+        };
+        chipsBar.appendChild(chip);
+    });
+}
+
+let _articleSearchTerm = "";
+
+// Render articles filtered by course in Articles tab
+function renderArticlesGrid() {
+    const articles = window._articlesData || [];
+    const grid = document.getElementById("articles-list");
+    const articlesCount = document.getElementById("articles-count");
+    if (!grid) return;
+
+    let filtered = articles;
+
+    if (_articleFilterCourseId) {
+        filtered = filtered.filter(a => a.course && a.course.id === _articleFilterCourseId);
+    }
+    if (_articleSearchTerm) {
+        filtered = filtered.filter(a =>
+            (a.title && a.title.toLowerCase().includes(_articleSearchTerm)) ||
+            (a.content && a.content.toLowerCase().includes(_articleSearchTerm))
+        );
+    }
+
+    grid.innerHTML = "";
+    if (!filtered.length) {
+        grid.innerHTML = "<div style='color:#888;padding:18px;'>No articles found.</div>";
+        articlesCount.textContent = "0 articles";
+        return;
+    }
+    articlesCount.textContent = filtered.length + (filtered.length === 1 ? " article" : " articles");
+    filtered.forEach(article => {
+        const card = document.createElement("div");
+        card.className = "article-card-advanced";
+        card.innerHTML = `
+            <h3><i class="fas fa-file-alt"></i> ${article.title}</h3>
+            <div class="article-preview">${article.content.length > 120 ? article.content.slice(0, 120) + '...' : article.content}</div>
+            <div class="meta">
+                <span><i class="fas fa-hashtag"></i> ID: ${article.id}</span>
+                <span><i class="fas fa-book"></i> ${article.course?.title || 'Unassigned'}</span>
+                <span><i class="fas fa-user"></i> ${article.author?.username || 'N/A'}</span>
+            </div>
+        `;
+        card.onclick = () => showArticleModal(article);
+        grid.appendChild(card);
+    });
+}
+
+// Show all articles when "Show All" is clicked
+document.getElementById("show-all-articles-btn")?.addEventListener("click", () => {
+    _articleFilterCourseId = null;
+    document.querySelectorAll(".chip").forEach(b => b.classList.remove('active'));
+    if (document.querySelector(".chip")) document.querySelector(".chip").classList.add('active');
+    renderArticlesGrid();
+    document.getElementById("show-all-articles-btn").style.display = "none";
+});
+
+// When articles tab is activated, re-render course buttons and articles
+function handleArticlesTabActive() {
+    renderCourseFilterChips();
+    renderArticlesGrid();
+    _articleFilterCourseId = null;
+    document.getElementById("show-all-articles-btn").style.display = "none";
 }
 
 function renderGroupedArticles() {
@@ -286,7 +384,7 @@ async function loadArticles() {
         const response = await fetch(`${API}/articles`, { headers: authHeaders() });
         const articles = await handleApiResponse(response, 'Failed to load articles');
         window._articlesData = articles;
-        renderGroupedArticles();
+        renderArticlesGrid();
     } catch (error) {
         showMessage(error.message);
     }
@@ -380,8 +478,8 @@ function setupAdminButtons() {
     const adminBtnIds = [
         { id: "load-users-btn", fn: loadAdminUsers },
         { id: "load-courses-btn", fn: loadAllCourses },
-        { id: "load-articles-btn", fn: loadAdminArticles },
-        { id: "load-pdfs-btn", fn: loadAdminPdfs },
+        { id: "load-articles-btn", fn: loadAllArticles },
+        { id: "load-pdfs-btn", fn: loadAllPdfs },
         { id: "load-projects-btn", fn: loadAllProjects },
         { id: "load-reported-btn", fn: loadReportedContent }
     ];
@@ -444,48 +542,17 @@ function closeCourseArticlesModal() {
 }
 
 function showArticleModal(article) {
-    document.getElementById("modal-article-title").innerHTML = `
-        <span style="font-size:1.5rem;font-weight:600;color:#4A90E2;">
-            <i class="fas fa-file-alt" style="margin-right:6px;color:#FFA726;"></i>${article.title}
-        </span>
-    `;
+    document.getElementById("modal-article-title").textContent = article.title;
     document.getElementById("modal-article-meta").innerHTML = `
-        <div class="meta" style="margin:12px 0 16px;display: flex;flex-wrap:wrap;gap:8px;">
-            <span class="badge" style="background:#e3f2fd;color:#1976D2;padding:4px 10px;border-radius:16px;">
-                <i class="fas fa-hashtag"></i> ID: ${article.id}
-            </span>
-            <span class="badge" style="background:#ede7f6;color:#6a1b9a;padding:4px 10px;border-radius:16px;">
-                <i class="fas fa-book"></i> Course: ${article.course?.id || 'N/A'}
-            </span>
-            <span class="badge" style="background:#fff3e0;color:#f57c00;padding:4px 10px;border-radius:16px;">
-                <i class="fas fa-user"></i> By: ${article.author?.username || 'N/A'}
-            </span>
-            <span class="badge" style="background:#e8f5e9;color:#388e3c;padding:4px 10px;border-radius:16px;">
-                <i class="fas fa-clock"></i> ${article.createdAt ? new Date(article.createdAt).toLocaleString() : ''}
-            </span>
-        </div>
+        <span class="badge"><i class="fas fa-hashtag"></i> ID: ${article.id}</span>
+        <span class="badge"><i class="fas fa-book"></i> ${article.course?.title || 'Unassigned'}</span>
+        <span class="badge"><i class="fas fa-user"></i> ${article.author?.username || 'N/A'}</span>
+        <span class="badge"><i class="fas fa-clock"></i> ${article.createdAt ? new Date(article.createdAt).toLocaleString() : ''}</span>
     `;
-    document.getElementById("modal-article-content").innerHTML = `
-        <div style="
-            background: #fafbfc;
-            border-left: 4px solid #42a5f5;
-            padding: 18px 20px;
-            margin: 10px 0 0;
-            border-radius: 8px;
-            font-size: 1.08rem;
-            color: #263238;
-            line-height: 1.7;
-            max-height: 350px;
-            overflow-y: auto;
-            box-shadow: 0 2px 8px 0 rgba(66,165,245,.06);
-        ">
-            ${article.content.replace(/\n/g, '<br>')}
-        </div>
-    `;
+    document.getElementById("modal-article-content").innerHTML = article.content.replace(/\n/g, "<br>");
     const modal = document.getElementById("article-modal");
     modal.classList.add('active');
     modal.classList.remove('hidden');
-    modal.style.animation = "modalFadeIn 0.25s";
 }
 
 function closeArticleModal() {
@@ -565,10 +632,10 @@ function showProjectRoadmapModal(project) {
         </div>
     `;
     document.getElementById("modal-project-extratechs").innerHTML = project.extraTechnologies && project.extraTechnologies.length
-      ? `<div style="margin-bottom:8px;"><b>You need to learn:</b> 
+        ? `<div style="margin-bottom:8px;"><b>You need to learn:</b> 
             <span style="color:#e53935;">${project.extraTechnologies.join(', ')}</span>
         </div>`
-      : `<div style="margin-bottom:8px;color:#388e3c;"><i class="fas fa-check"></i> You know all required technologies!</div>`;
+        : `<div style="margin-bottom:8px;color:#388e3c;"><i class="fas fa-check"></i> You know all required technologies!</div>`;
     document.getElementById("modal-project-roadmap").innerHTML = `
         <div style="margin:12px 0;">
             <b>Project Roadmap:</b>
@@ -672,8 +739,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // If articles tab, re-render grouped articles
             if (tabId === 'articles') {
-                renderGroupedArticles();
+                handleArticlesTabActive();
             }
+
+            if (tab.getAttribute('data-tab') === 'articles') {
+                handleArticlesTabActive();
+            }
+
             // If projects tab, refresh with user input
             if (tabId === 'projects') {
                 const techInput = document.getElementById("project-tech-input")?.value.trim() || "";
@@ -778,8 +850,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Add Article
-    document.getElementById("add-article-form")?.addEventListener("submit", async (e) => {
+    document.getElementById("open-add-article-modal").addEventListener("click", () => {
+        // Populate courses in select
+        const select = document.getElementById("article-course-id");
+        select.innerHTML = '<option value="">Select Course</option>';
+        (window._coursesData || []).forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.title}</option>`;
+        });
+        document.getElementById("add-article-modal").classList.add("active");
+    });
+    document.getElementById("close-add-article-modal").addEventListener("click", () => {
+        document.getElementById("add-article-modal").classList.remove("active");
+    });
+    document.getElementById("add-article-modal").addEventListener("click", function (e) {
+        if (e.target === this) this.classList.remove("active");
+    });
+
+    document.getElementById("article-search-input").addEventListener("input", function () {
+        _articleSearchTerm = this.value.trim().toLowerCase();
+        renderArticlesGrid();
+    });
+
+    // Close article modal
+    document.getElementById("close-article-modal").addEventListener("click", () => {
+        document.getElementById("article-modal").classList.remove("active");
+    });
+    document.getElementById("article-modal").addEventListener("click", function (e) {
+        if (e.target === this) this.classList.remove("active");
+    });
+
+    // Add Article submit
+    document.getElementById("add-article-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         if (!token) {
             showMessage("You must login first.");
@@ -801,6 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await handleApiResponse(response, 'Failed to create article');
             await loadArticles();
             document.getElementById("add-article-form").reset();
+            document.getElementById("add-article-modal").classList.remove("active");
             showMessage('Article created successfully!', false);
         } catch (error) {
             showMessage(error.message || 'Failed to create article. Please try again.');
@@ -998,7 +1100,11 @@ async function loadAllArticles() {
                 <div class="meta">
                     <span>By: ${article.author || 'N/A'}</span>
                 </div>
+                <button class="admin-delete-btn"><i class="fas fa-trash"></i> Delete</button>
             `;
+            card.querySelector('.admin-delete-btn').onclick = function () {
+                deleteArticle(article.id, this);
+            };
             list.appendChild(card);
         });
     } catch (error) {
@@ -1031,7 +1137,6 @@ async function loadAllPdfs() {
             const pdfUrl = `${API}/pdf/file/${pdf.id}`;
             const pdfCard = document.createElement('div');
             pdfCard.className = 'item-card pdf-card';
-            pdfCard.style.cursor = 'pointer';
             pdfCard.innerHTML = `
                 <h3>
                     <i class="fas fa-file-pdf"></i>
@@ -1043,10 +1148,16 @@ async function loadAllPdfs() {
                     <span>ID: ${pdf.id}</span>
                     <span>By: ${byLabel}</span>
                 </div>
+                <button class="admin-delete-btn"><i class="fas fa-trash"></i> Delete</button>
             `;
-            pdfCard.addEventListener('click', () => {
-                window.open(pdfUrl, '_blank');
-            });
+            pdfCard.querySelector('.admin-delete-btn').onclick = function () {
+                deletePdf(pdf.id, this);
+            };
+            pdfCard.onclick = function (e) {
+                if (!e.target.classList.contains('admin-delete-btn') && !e.target.closest('.admin-delete-btn')) {
+                    window.open(pdfUrl, '_blank');
+                }
+            };
             list.appendChild(pdfCard);
         });
     } catch (error) {
@@ -1226,7 +1337,11 @@ async function loadAllCourses() {
                     <span>ID: ${course.id}</span>
                     <span>Category: ${course.category || 'N/A'}</span>
                 </div>
+                <button class="admin-delete-btn"><i class="fas fa-trash"></i> Delete</button>
             `;
+            card.querySelector('.admin-delete-btn').onclick = function () {
+                deleteCourse(course.id, this);
+            };
             list.appendChild(card);
         });
     } catch (error) {
@@ -1257,10 +1372,78 @@ async function loadAllProjects() {
                 <div class="meta">
                     <span>Tech: ${project.technologies.join(', ')}</span>
                 </div>
+                <button class="admin-delete-btn"><i class="fas fa-trash"></i> Delete</button>
             `;
+            card.querySelector('.admin-delete-btn').onclick = function () {
+                deleteProject(project.id, this);
+            };
             list.appendChild(card);
         });
     } catch (error) {
         showMessage(error.message || 'Failed to load projects.');
+    }
+}
+
+
+async function deleteCourse(id, btn) {
+    if (!window.token || window.userRole !== 'ADMIN') return;
+    if (!confirm('Are you sure you want to delete this course?')) return;
+    try {
+        await fetch(`${API}/courses/${id}`, {
+            method: "DELETE",
+            headers: authHeaders()
+        });
+        showMessage("Course deleted.", false);
+        btn.closest('.item-card').remove();
+    } catch {
+        showMessage("Failed to delete course.");
+    }
+}
+
+// Delete Article (ADMIN)
+async function deleteArticle(id, btn) {
+    if (!window.token || window.userRole !== 'ADMIN') return;
+    if (!confirm('Are you sure you want to delete this article?')) return;
+    try {
+        await fetch(`${API}/articles/${id}`, {
+            method: "DELETE",
+            headers: authHeaders()
+        });
+        showMessage("Article deleted.", false);
+        btn.closest('.item-card').remove();
+    } catch {
+        showMessage("Failed to delete article.");
+    }
+}
+
+// Delete PDF (ADMIN)
+async function deletePdf(id, btn) {
+    if (!window.token || window.userRole !== 'ADMIN') return;
+    if (!confirm('Are you sure you want to delete this PDF?')) return;
+    try {
+        await fetch(`${API}/pdf/${id}`, {
+            method: "DELETE",
+            headers: authHeaders()
+        });
+        showMessage("PDF deleted.", false);
+        btn.closest('.item-card').remove();
+    } catch {
+        showMessage("Failed to delete PDF.");
+    }
+}
+
+// Delete Project (ADMIN)
+async function deleteProject(id, btn) {
+    if (!window.token || window.userRole !== 'ADMIN') return;
+    if (!confirm('Are you sure you want to delete this project?')) return;
+    try {
+        await fetch(`${API}/projects/${id}`, {
+            method: "DELETE",
+            headers: authHeaders()
+        });
+        showMessage("Project deleted.", false);
+        btn.closest('.item-card').remove();
+    } catch {
+        showMessage("Failed to delete project.");
     }
 }

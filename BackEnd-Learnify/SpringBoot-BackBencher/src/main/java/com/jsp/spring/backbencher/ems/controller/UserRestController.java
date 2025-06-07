@@ -31,15 +31,5 @@ public class UserRestController {
         return ResponseEntity.ok().build();
     }
     
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id, User user)
-    {
-    	if(user == null)
-    	{
-    		return ResponseEntity.status(401).build();
-    		
-    	}
-    	userService.deleteUser(id);
-    	return ResponseEntity.ok().build();
-    }
+   
 }

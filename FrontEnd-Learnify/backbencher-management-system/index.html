@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BackBencher EMS - Modern Education Platform</title>
+    <title>Learnify EMS - Modern Education Platform</title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -204,266 +204,279 @@
                     <div class="section-header">
                         <h2><i class="fas fa-file-alt"></i> Articles</h2>
                     </div>
+                    <div class="articles-search-bar">
+                        <input type="text" id="article-search-input" class="form-control articles-search-input"
+                            placeholder="🔍 Search articles by title or content..." autocomplete="off">
+                    </div>
+                    <!-- Horizontal scrollable filter chips -->
+                    <div class="chips-bar" id="course-filter-chips"></div>
+                    <div class="chips-bar-fade"></div>
 
-                    <div class="card">
-                        <div class="card-header">Create New Article</div>
-                        <div class="card-body">
+                    <div class="articles-actions-bar">
+                        <button class="btn btn-outline" id="show-all-articles-btn" style="display:none;">
+                            <i class="fas fa-list"></i> Show All
+                        </button>
+                        <span class="articles-count" id="articles-count"></span>
+                    </div>
+
+                    <div id="articles-list" class="articles-grid"></div>
+
+                    <!-- Floating Add Article Button -->
+                    <button class="fab" id="open-add-article-modal" title="Add Article">
+                        <i class="fas fa-plus"></i>
+                    </button>
+
+                    <!-- Article Modal for view -->
+                    <div id="article-modal" class="modal">
+                        <div class="modal-content article-modal-content">
+                            <span class="close-modal" id="close-article-modal">&times;</span>
+                            <div id="modal-article-meta"></div>
+                            <h2 id="modal-article-title"></h2>
+                            <div id="modal-article-content"></div>
+                        </div>
+                    </div>
+
+                    <!-- Add/Edit Article Modal -->
+                    <div id="add-article-modal" class="modal">
+                        <div class="modal-content add-article-modal-content">
+                            <span class="close-modal" id="close-add-article-modal">&times;</span>
+                            <h2><i class="fas fa-plus-circle"></i> Add Article</h2>
                             <form id="add-article-form">
                                 <div class="form-group">
-                                    <label for="article-title">Article Title</label>
-                                    <input type="text" id="article-title" class="form-control input-lg"
-                                        placeholder="Enter article title" required>
+                                    <label for="article-title">Title</label>
+                                    <input type="text" id="article-title" class="form-control" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="article-content">Content</label>
-                                    <textarea id="article-content" class="form-control textarea-lg"
-                                        placeholder="Enter article content" required rows="6"></textarea>
+                                    <textarea id="article-content" class="form-control" required rows="6"></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label for="article-course-id">Select Course</label>
-                                    <select id="article-course-id" class="form-control input-lg" required>
+                                    <label for="article-course-id">Course</label>
+                                    <select id="article-course-id" class="form-control" required>
                                         <option value="">Select Course</option>
                                     </select>
                                 </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-plus-circle"></i> Create Article
+                                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:18px;">
+                                    <i class="fas fa-check"></i> Save Article
                                 </button>
                             </form>
                         </div>
                     </div>
+                </div>
 
-                    <div class="section-header">
-                        <h2><i class="fas fa-newspaper"></i> Latest Articles</h2>
+                <!-- Course Articles Modal (only for article tab, not for courses tab) -->
+                <div id="course-articles-modal" class="modal">
+                    <div class="modal-content" style="max-width:700px;">
+                        <span class="close-modal" id="close-course-articles-modal">&times;</span>
+                        <h3 id="modal-course-title"></h3>
+                        <div id="modal-course-articles-list"></div>
                     </div>
+                </div>
+            </div>
 
-                    <div id="articles-grouped-list"></div>
-                    
-                    <!-- Article Modal (only for articles tab) -->
-                    <div id="article-modal" class="modal">
-                        <div class="modal-content">
-                            <span class="close-modal" id="close-article-modal">&times;</span>
-                            <h3 id="modal-article-title"></h3>
-                            <div id="modal-article-meta"></div>
-                            <p id="modal-article-content"></p>
-                        </div>
-                    </div>
-                    
-                    <!-- Course Articles Modal (only for article tab, not for courses tab) -->
-                    <div id="course-articles-modal" class="modal">
-                        <div class="modal-content" style="max-width:700px;">
-                            <span class="close-modal" id="close-course-articles-modal">&times;</span>
-                            <h3 id="modal-course-title"></h3>
-                            <div id="modal-course-articles-list"></div>
-                        </div>
+            <!-- PDFs Tab -->
+            <div class="tab-content" id="pdfs-tab">
+                <div class="section-header">
+                    <h2><i class="fas fa-file-pdf"></i> PDF Resources</h2>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Upload PDF Resource</div>
+                    <div class="card-body">
+                        <form id="upload-pdf-form" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="pdf-file">Select PDF File</label>
+                                <input type="file" id="pdf-file" class="form-control input-lg" accept="application/pdf"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="pdf-course-id">Select Course</label>
+                                <select id="pdf-course-id" class="form-control input-lg" required>
+                                    <option value="">Select Course</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Upload PDF
+                            </button>
+                        </form>
                     </div>
                 </div>
 
-                <!-- PDFs Tab -->
-                <div class="tab-content" id="pdfs-tab">
-                    <div class="section-header">
-                        <h2><i class="fas fa-file-pdf"></i> PDF Resources</h2>
-                    </div>
+                <div class="section-header">
+                    <h2><i class="fas fa-archive"></i> PDF Library</h2>
+                </div>
 
-                    <div class="card">
-                        <div class="card-header">Upload PDF Resource</div>
-                        <div class="card-body">
-                            <form id="upload-pdf-form" enctype="multipart/form-data">
-                                <div class="form-group">
-                                    <label for="pdf-file">Select PDF File</label>
-                                    <input type="file" id="pdf-file" class="form-control input-lg"
-                                        accept="application/pdf" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="pdf-course-id">Select Course</label>
-                                    <select id="pdf-course-id" class="form-control input-lg" required>
-                                        <option value="">Select Course</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-upload"></i> Upload PDF
-                                </button>
-                            </form>
+                <div id="pdfs-list" class="grid"></div>
+            </div>
+
+            <!-- Project Ideas Tab -->
+            <div class="tab-content" id="projects-tab">
+                <div class="section-header">
+                    <h2><i class="fas fa-lightbulb"></i> Project Ideas For You</h2>
+                </div>
+                <div class="card">
+                    <div class="card-header">Tell us what technologies you know</div>
+                    <div class="card-body">
+                        <form id="project-tech-form">
+                            <div class="form-group">
+                                <label for="project-tech-input">Technologies (comma separated)</label>
+                                <input type="text" id="project-tech-input" class="form-control input-lg"
+                                    placeholder="e.g. Java, Spring Boot, React, HTML, CSS" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-search"></i> Find Projects
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> Suggested Projects</h2>
+                </div>
+                <div id="suggested-projects-list" class="grid"></div>
+                <!-- Project Roadmap Modal -->
+                <div id="project-roadmap-modal" class="modal">
+                    <div class="modal-content" style="max-width:650px;">
+                        <span class="close-modal" id="close-project-roadmap-modal">&times;</span>
+                        <h3 id="modal-project-title"></h3>
+                        <div id="modal-project-summary"></div>
+                        <div id="modal-project-technologies"></div>
+                        <div id="modal-project-extratechs"></div>
+                        <div id="modal-project-roadmap"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Section -->
+            <div class="tab-content" id="admin-tab">
+                <div class="admin-section">
+                    <div class="admin-header">
+                        <h2><i class="fas fa-lock"></i> Admin Panel</h2>
+                        <div class="action-buttons">
+                            <button id="load-users-btn" class="btn btn-warning">
+                                <i class="fas fa-users"></i> Load Users
+                            </button>
+                            <button id="load-courses-btn" class="btn btn-info">
+                                <i class="fas fa-book"></i> Load Courses
+                            </button>
+                            <button id="load-articles-btn" class="btn btn-primary">
+                                <i class="fas fa-file-alt"></i> Load Articles
+                            </button>
+                            <button id="load-pdfs-btn" class="btn btn-success">
+                                <i class="fas fa-file-pdf"></i> Load PDFs
+                            </button>
+                            <button id="load-projects-btn" class="btn btn-lightbulb">
+                                <i class="fas fa-lightbulb"></i> Load Projects
+                            </button>
+                            <button id="load-reported-btn" class="btn btn-danger">
+                                <i class="fas fa-flag"></i> Load Reported PDFs
+                            </button>
                         </div>
                     </div>
 
                     <div class="section-header">
-                        <h2><i class="fas fa-archive"></i> PDF Library</h2>
-                    </div>
-
-                    <div id="pdfs-list" class="grid"></div>
-                </div>
-
-                <!-- Project Ideas Tab -->
-                <div class="tab-content" id="projects-tab">
-                    <div class="section-header">
-                        <h2><i class="fas fa-lightbulb"></i> Project Ideas For You</h2>
+                        <h2><i class="fas fa-user-cog"></i> User Management</h2>
                     </div>
                     <div class="card">
-                        <div class="card-header">Tell us what technologies you know</div>
                         <div class="card-body">
-                            <form id="project-tech-form">
+                            <div id="users-list" class="grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h2><i class="fas fa-book"></i> Course Management</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="all-courses-list" class="grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h2><i class="fas fa-file-alt"></i> Article Management</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="all-articles-list" class="grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h2><i class="fas fa-file-pdf"></i> PDF Management</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="all-pdfs-list" class="grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h2><i class="fas fa-lightbulb"></i> Project Management</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="all-projects-list" class="grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h2><i class="fas fa-exclamation-triangle"></i> Reported Content</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="reported-list" class="grid"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h2><i class="fas fa-lightbulb"></i> Add Project Idea (Admin)</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Manual Entry</div>
+                        <div class="card-body">
+                            <form id="add-project-form">
                                 <div class="form-group">
-                                    <label for="project-tech-input">Technologies (comma separated)</label>
-                                    <input type="text" id="project-tech-input" class="form-control input-lg"
-                                        placeholder="e.g. Java, Spring Boot, React, HTML, CSS" required>
+                                    <label for="project-title">Project Title</label>
+                                    <input type="text" id="project-title" class="form-control input-lg" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="project-summary">Summary</label>
+                                    <textarea id="project-summary" class="form-control" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="project-technologies">Technologies (comma separated)</label>
+                                    <input type="text" id="project-technologies" class="form-control input-lg" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="project-roadmap">Roadmap Steps (one per line)</label>
+                                    <textarea id="project-roadmap" class="form-control" required></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-search"></i> Find Projects
+                                    <i class="fas fa-plus-circle"></i> Add Project
                                 </button>
                             </form>
                         </div>
                     </div>
-                    <div class="section-header">
-                        <h2><i class="fas fa-list"></i> Suggested Projects</h2>
-                    </div>
-                    <div id="suggested-projects-list" class="grid"></div>
-                    <!-- Project Roadmap Modal -->
-                    <div id="project-roadmap-modal" class="modal">
-                        <div class="modal-content" style="max-width:650px;">
-                            <span class="close-modal" id="close-project-roadmap-modal">&times;</span>
-                            <h3 id="modal-project-title"></h3>
-                            <div id="modal-project-summary"></div>
-                            <div id="modal-project-technologies"></div>
-                            <div id="modal-project-extratechs"></div>
-                            <div id="modal-project-roadmap"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Admin Section -->
-                <div class="tab-content" id="admin-tab">
-                    <div class="admin-section">
-                        <div class="admin-header">
-                            <h2><i class="fas fa-lock"></i> Admin Panel</h2>
-                            <div class="action-buttons">
-                                <button id="load-users-btn" class="btn btn-warning">
-                                    <i class="fas fa-users"></i> Load Users
+                    <div class="card">
+                        <div class="card-header">Import from GitHub</div>
+                        <div class="card-body">
+                            <form id="import-project-form">
+                                <div class="form-group">
+                                    <label for="github-url">GitHub Repo URL</label>
+                                    <input type="text" id="github-url" class="form-control input-lg"
+                                        placeholder="https://github.com/owner/repo" required>
+                                </div>
+                                <button type="submit" class="btn btn-info">
+                                    <i class="fab fa-github"></i> Import Project
                                 </button>
-                                <button id="load-courses-btn" class="btn btn-info">
-                                    <i class="fas fa-book"></i> Load Courses
-                                </button>
-                                <button id="load-articles-btn" class="btn btn-primary">
-                                    <i class="fas fa-file-alt"></i> Load Articles
-                                </button>
-                                <button id="load-pdfs-btn" class="btn btn-success">
-                                    <i class="fas fa-file-pdf"></i> Load PDFs
-                                </button>
-                                <button id="load-projects-btn" class="btn btn-lightbulb">
-                                    <i class="fas fa-lightbulb"></i> Load Projects
-                                </button>
-                                <button id="load-reported-btn" class="btn btn-danger">
-                                    <i class="fas fa-flag"></i> Load Reported PDFs
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="section-header">
-                            <h2><i class="fas fa-user-cog"></i> User Management</h2>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <div id="users-list" class="grid"></div>
-                            </div>
-                        </div>
-
-                        <div id="all-courses-list" class="section-header">
-                            <h2><i class="fas fa-book"></i> Course Management</h2>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <div id="admin-courses-list" class="grid"></div>
-                            </div>
-                        </div>
-
-                        <div id="all-articles-list" class="section-header">
-                            <h2><i class="fas fa-file-alt"></i> Article Management</h2>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <div id="admin-articles-list" class="grid"></div>
-                            </div>
-                        </div>
-
-                        <div id="all-pdfs-list" class="section-header">
-                            <h2><i class="fas fa-file-pdf"></i> PDF Management</h2>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <div id="admin-pdfs-list" class="grid"></div>
-                            </div>
-                        </div>
-
-                        <div id="all-projects-list" class="section-header">
-                            <h2><i class="fas fa-lightbulb"></i> Project Management</h2>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <div id="admin-projects-list" class="grid"></div>
-                            </div>
-                        </div>
-
-                        <div class="section-header">
-                            <h2><i class="fas fa-exclamation-triangle"></i> Reported Content</h2>
-                        </div>
-                        <div class="card">
-                            <div class="card-body">
-                                <div id="reported-list" class="grid"></div>
-                            </div>
-                        </div>
-
-                        <div class="section-header">
-                            <h2><i class="fas fa-lightbulb"></i> Add Project Idea (Admin)</h2>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">Manual Entry</div>
-                            <div class="card-body">
-                                <form id="add-project-form">
-                                    <div class="form-group">
-                                        <label for="project-title">Project Title</label>
-                                        <input type="text" id="project-title" class="form-control input-lg" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="project-summary">Summary</label>
-                                        <textarea id="project-summary" class="form-control" required></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="project-technologies">Technologies (comma separated)</label>
-                                        <input type="text" id="project-technologies" class="form-control input-lg"
-                                            required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="project-roadmap">Roadmap Steps (one per line)</label>
-                                        <textarea id="project-roadmap" class="form-control" required></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-plus-circle"></i> Add Project
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">Import from GitHub</div>
-                            <div class="card-body">
-                                <form id="import-project-form">
-                                    <div class="form-group">
-                                        <label for="github-url">GitHub Repo URL</label>
-                                        <input type="text" id="github-url" class="form-control input-lg"
-                                            placeholder="https://github.com/owner/repo" required>
-                                    </div>
-                                    <button type="submit" class="btn btn-info">
-                                        <i class="fab fa-github"></i> Import Project
-                                    </button>
-                                </form>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
+    </div>
+    </main>
     </div>
     <script src="app.js"></script>
 </body>
 
 </html>
-
-

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jsp.spring.backbencher.ems.service.AdminService;
+import com.jsp.spring.backbencher.ems.service.CourseService;
+import com.jsp.spring.backbencher.ems.service.UserService;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -45,5 +48,27 @@ public class AdminRestController {
     public ResponseEntity<?> rejectContent(@PathVariable Long id) {
         adminService.rejectContent(id);
         return ResponseEntity.ok().build();
+    }
+    
+    @Autowired
+    private UserService userService;
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUserByAdmin(@PathVariable Long id) {
+        // Optionally add an admin check here!
+        userService.deleteUser(id);
+        return ResponseEntity.ok().body("User deleted successfully");
+    }
+    
+    @Autowired
+    private CourseService courseService;
+
+    
+
+    @DeleteMapping("/courses/{id}")
+    public ResponseEntity<?> deleteCourseByAdmin(@PathVariable Long id) {
+        // TODO: Add admin role check for production!
+        courseService.deleteCourse(id);
+        return ResponseEntity.ok().body("Course deleted successfully");
     }
 }
