@@ -1,5 +1,4 @@
-# Learnify
-# Learning Management System (LMS)
+# Learnify(Learning Management System)
 
 ## Overview
 The Learning Management System (LMS) is a comprehensive platform for creating, managing, and delivering educational content. This system includes features for course management, article publishing, PDF resource handling, and user administration.
