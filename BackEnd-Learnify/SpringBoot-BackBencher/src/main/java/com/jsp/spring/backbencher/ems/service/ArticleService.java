@@ -41,3 +41,4 @@ public class ArticleService {
         return articleRepository.fullTextSearch(query);
     }
 }
+

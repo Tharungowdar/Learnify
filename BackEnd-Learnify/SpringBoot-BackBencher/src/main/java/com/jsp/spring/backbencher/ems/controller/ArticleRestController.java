@@ -3,6 +3,7 @@ package com.jsp.spring.backbencher.ems.controller;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,37 @@ public class ArticleRestController {
     public List<Article> listArticles() {
         return articleService.getAllArticles();
     }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<Article> editArticle(@PathVariable Long id,
+                                               @RequestBody Map<String, Object> payload,
+                                               Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(null);
+        }
+        Article existing = articleService.getArticleById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid article Id:" + id));
+
+        String title = (String) payload.get("title");
+        String content = (String) payload.get("content");
+        Long courseId = Long.parseLong(payload.get("courseId").toString());
+        List<Long> references = payload.get("references") == null ? List.of() :
+            ((List<?>) payload.get("references")).stream()
+                .map(Object::toString)
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+
+        existing.setTitle(title);
+        existing.setContent(content);
+        existing.setReferences(references);
+        Course course = courseService.getCourseById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+        existing.setCourse(course);
+
+        Article saved = articleService.saveArticle(existing);
+        return ResponseEntity.ok(saved);
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Article> getArticle(@PathVariable Long id) {
@@ -48,8 +80,19 @@ public class ArticleRestController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+    
+    @GetMapping("/lookup")
+    public List<Map<String, Object>> lookupArticles() {
+        return articleService.getAllArticles().stream()
+            .map(a -> {
+                Map<String, Object> map = new java.util.HashMap<>();
+                map.put("id", a.getId());
+                map.put("title", a.getTitle());
+                return map;
+            })
+            .collect(Collectors.toList());
+    }
 
- // Error response class
     private static class ErrorResponse {
         private String message;
         
@@ -71,22 +114,17 @@ public class ArticleRestController {
                     .body(new ErrorResponse("User not authenticated"));
             }
             
-            // Extract values from payload
             String title = (String) payload.get("title");
             String content = (String) payload.get("content");
             Long courseId = Long.parseLong(payload.get("courseId").toString());
             
-            // Get current user - use principal name
             String username = principal.getName();
             User user = userService.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
             
-            // Get course
             Course course = courseService.getCourseById(courseId)
                     .orElseThrow(() -> new IllegalArgumentException("Course not found"));
-            
-            // Create and save article
-            Article article = new Article();
+                        Article article = new Article();
             article.setTitle(title);
             article.setContent(content);
             article.setAuthor(user);
@@ -99,25 +137,6 @@ public class ArticleRestController {
             return ResponseEntity.badRequest()
                 .body(new ErrorResponse(e.getMessage()));
         }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Article> editArticle(@PathVariable Long id,
-                                               @RequestBody Article article,
-                                               @RequestParam Long courseId,
-                                               Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(401).body(null);
-        }
-        Article existing = articleService.getArticleById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid article Id:" + id));
-        article.setId(id);
-        article.setAuthor(existing.getAuthor());
-        Course course = courseService.getCourseById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("Course not found"));
-        article.setCourse(course);
-        Article saved = articleService.saveArticle(article);
-        return ResponseEntity.ok(saved);
     }
 
     @DeleteMapping("/{id}")

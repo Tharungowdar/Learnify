@@ -1084,34 +1084,57 @@ async function loadAllArticles() {
         });
         if (!response.ok) throw new Error("Failed to fetch articles");
         const articles = await response.json();
-        const list = document.getElementById("all-articles-list");
-        if (!list) return;
-        list.innerHTML = "";
-        if (!Array.isArray(articles) || !articles.length) {
-            list.innerHTML = "<div style='color:#888;padding:14px;'>No articles found.</div>";
-            return;
-        }
-        articles.forEach(article => {
-            const card = document.createElement('div');
-            card.className = 'item-card article-card';
-            card.innerHTML = `
-                <h3><i class="fas fa-newspaper"></i> ${article.title}</h3>
-                <p>${article.summary || ''}</p>
-                <div class="meta">
-                    <span>By: ${article.author || 'N/A'}</span>
-                </div>
-                <button class="admin-delete-btn"><i class="fas fa-trash"></i> Delete</button>
-            `;
-            card.querySelector('.admin-delete-btn').onclick = function () {
-                deleteArticle(article.id, this);
-            };
-            list.appendChild(card);
-        });
+        renderAdminArticles(articles);
     } catch (error) {
         showMessage(error.message || 'Failed to load articles.');
     }
 }
 
+function renderAdminArticles(articles) {
+    const list = document.getElementById("all-articles-list");
+    if (!list) return;
+    list.innerHTML = "";
+    if (!Array.isArray(articles) || !articles.length) {
+        list.innerHTML = "<div style='color:#888;padding:14px;'>No articles found.</div>";
+        return;
+    }
+    articles.forEach(article => {
+        const card = document.createElement('div');
+        card.className = 'item-card article-card';
+        card.innerHTML = `
+            <h3><i class="fas fa-newspaper"></i> ${article.title}</h3>
+            <p>${article.summary || ''}</p>
+            <div class="meta">
+                <span>By: ${article.author || 'N/A'}</span>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-danger delete-article-btn" data-id="${article.id}">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+
+    // Delete article event
+    list.querySelectorAll('.delete-article-btn').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.getAttribute('data-id');
+            if (confirm("Are you sure you want to delete this article?")) {
+                try {
+                    await fetch(`${API}/articles/${id}`, {
+                        method: "DELETE",
+                        headers: authHeaders()
+                    });
+                    showMessage("Article deleted.", false);
+                    btn.closest('.item-card').remove();
+                } catch {
+                    showMessage("Failed to delete article.");
+                }
+            }
+        };
+    });
+}
 
 // ---- Admin PDFs ----
 async function loadAllPdfs() {
@@ -1122,47 +1145,74 @@ async function loadAllPdfs() {
         });
         if (!response.ok) throw new Error("Failed to fetch PDFs");
         const pdfs = await response.json();
-        const list = document.getElementById("all-pdfs-list");
-        if (!list) return;
-        list.innerHTML = "";
-        if (!Array.isArray(pdfs) || !pdfs.length) {
-            list.innerHTML = "<div style='color:#888;padding:14px;'>No PDFs found.</div>";
-            return;
-        }
-        pdfs.forEach(pdf => {
-            const courseLabel = pdf.course && pdf.course.title
-                ? `${pdf.course.title} (${pdf.course.id})`
-                : (pdf.course?.id ? `ID: ${pdf.course.id}` : "N/A");
-            const byLabel = pdf.user && pdf.user.username ? pdf.user.username : "N/A";
-            const pdfUrl = `${API}/pdf/file/${pdf.id}`;
-            const pdfCard = document.createElement('div');
-            pdfCard.className = 'item-card pdf-card';
-            pdfCard.innerHTML = `
-                <h3>
-                    <i class="fas fa-file-pdf"></i>
-                    <span style="color:#f44336;text-decoration:underline;">${pdf.fileName}</span>
-                </h3>
-                <p>${pdf.extractedText ? pdf.extractedText.substring(0, 100) + '...' : ''}</p>
-                <div class="meta">
-                    <span>Course: ${courseLabel}</span>
-                    <span>ID: ${pdf.id}</span>
-                    <span>By: ${byLabel}</span>
-                </div>
-                <button class="admin-delete-btn"><i class="fas fa-trash"></i> Delete</button>
-            `;
-            pdfCard.querySelector('.admin-delete-btn').onclick = function () {
-                deletePdf(pdf.id, this);
-            };
-            pdfCard.onclick = function (e) {
-                if (!e.target.classList.contains('admin-delete-btn') && !e.target.closest('.admin-delete-btn')) {
-                    window.open(pdfUrl, '_blank');
-                }
-            };
-            list.appendChild(pdfCard);
-        });
+        renderAdminPdfs(pdfs);
     } catch (error) {
         showMessage(error.message || 'Failed to load PDFs.');
     }
+}
+
+function renderAdminPdfs(pdfs) {
+    const list = document.getElementById("all-pdfs-list");
+    if (!list) return;
+    list.innerHTML = "";
+    if (!Array.isArray(pdfs) || !pdfs.length) {
+        list.innerHTML = "<div style='color:#888;padding:14px;'>No PDFs found.</div>";
+        return;
+    }
+    pdfs.forEach(pdf => {
+        const courseLabel = pdf.course && pdf.course.title
+            ? `${pdf.course.title} (${pdf.course.id})`
+            : (pdf.course?.id ? `ID: ${pdf.course.id}` : "N/A");
+        const byLabel = pdf.user && pdf.user.username ? pdf.user.username : "N/A";
+        const pdfUrl = `${API}/pdf/file/${pdf.id}`;
+        const pdfCard = document.createElement('div');
+        pdfCard.className = 'item-card pdf-card';
+        pdfCard.innerHTML = `
+            <h3>
+                <i class="fas fa-file-pdf"></i>
+                <span style="color:#f44336;text-decoration:underline;">${pdf.fileName}</span>
+            </h3>
+            <p>${pdf.extractedText ? pdf.extractedText.substring(0, 100) + '...' : ''}</p>
+            <div class="meta">
+                <span>Course: ${courseLabel}</span>
+                <span>ID: ${pdf.id}</span>
+                <span>By: ${byLabel}</span>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-danger delete-pdf-btn" data-id="${pdf.id}">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        `;
+        pdfCard.onclick = function (e) {
+            if (
+                !e.target.classList.contains('delete-pdf-btn') &&
+                !e.target.closest('.delete-pdf-btn')
+            ) {
+                window.open(pdfUrl, '_blank');
+            }
+        };
+        list.appendChild(pdfCard);
+    });
+
+    // Delete PDF event
+    list.querySelectorAll('.delete-pdf-btn').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.getAttribute('data-id');
+            if (confirm("Are you sure you want to delete this PDF?")) {
+                try {
+                    await fetch(`${API}/admin/pdf/${id}`, { // <--- FIXED ENDPOINT
+                        method: "DELETE",
+                        headers: authHeaders()
+                    });
+                    showMessage("PDF deleted.", false);
+                    btn.closest('.item-card').remove();
+                } catch {
+                    showMessage("Failed to delete PDF.");
+                }
+            }
+        };
+    });
 }
 
 // ---- Admin Reported ----
@@ -1314,39 +1364,67 @@ async function loadPdfs() {
 
 async function loadAllCourses() {
     try {
-        const response = await fetch(`${API}/courses`, {
-            method: "GET",
-            headers: authHeaders()
-        });
-        if (!response.ok) throw new Error("Failed to load courses");
-        const courses = await response.json();
-        const list = document.getElementById("all-courses-list");
-        if (!list) return;
-        list.innerHTML = "";
-        if (!Array.isArray(courses) || !courses.length) {
-            list.innerHTML = "<div style='color:#888;padding:14px;'>No courses found.</div>";
-            return;
+        // Use admin dashboard to get all courses for admin, similar to how users are loaded
+        const res = await fetch(`${API}/admin/dashboard`, { headers: authHeaders() });
+        const data = await handleApiResponse(res, 'Failed to load courses');
+        const courses = data.courses || data.coursesList || [];
+        // If dashboard doesn't return courses, fallback to /api/courses
+        let courseArr = courses;
+        if (!Array.isArray(courseArr) || !courseArr.length) {
+            const resp = await fetch(`${API}/courses`, { headers: authHeaders() });
+            courseArr = await handleApiResponse(resp, 'Failed to load courses');
         }
-        courses.forEach(course => {
-            const card = document.createElement('div');
-            card.className = 'item-card course-card';
-            card.innerHTML = `
-                <h3><i class="fas fa-book"></i> ${course.title}</h3>
-                <p>${course.description || 'No description'}</p>
-                <div class="meta">
-                    <span>ID: ${course.id}</span>
-                    <span>Category: ${course.category || 'N/A'}</span>
-                </div>
-                <button class="admin-delete-btn"><i class="fas fa-trash"></i> Delete</button>
-            `;
-            card.querySelector('.admin-delete-btn').onclick = function () {
-                deleteCourse(course.id, this);
-            };
-            list.appendChild(card);
-        });
+        renderAdminCourses(courseArr);
     } catch (error) {
-        showMessage(error.message || 'Failed to load courses.');
+        showMessage('Failed to load courses. Please try again.');
     }
+}
+
+function renderAdminCourses(courses) {
+    const list = document.getElementById("all-courses-list");
+    if (!list) return;
+    list.innerHTML = "";
+    if (!Array.isArray(courses) || !courses.length) {
+        list.innerHTML = "<div style='color:#888;padding:14px;'>No courses found.</div>";
+        return;
+    }
+    courses.forEach(course => {
+        const card = document.createElement('div');
+        card.className = 'item-card course-card';
+        card.innerHTML = `
+            <h3><i class="fas fa-book"></i> ${course.title}</h3>
+            <p>${course.description || 'No description'}</p>
+            <div class="meta">
+                <span>ID: ${course.id}</span>
+                <span>Category: ${course.category || course.type || 'N/A'}</span>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-danger delete-course-btn" data-id="${course.id}">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+
+    // Delete course event
+    list.querySelectorAll('.delete-course-btn').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.getAttribute('data-id');
+            if (confirm("Are you sure you want to delete this course?")) {
+                try {
+                    await fetch(`${API}/admin/courses/${id}`, {
+                        method: "DELETE",
+                        headers: authHeaders()
+                    });
+                    showMessage("Course deleted.", false);
+                    btn.closest('.item-card').remove();
+                } catch {
+                    showMessage("Failed to delete course.");
+                }
+            }
+        };
+    });
 }
 
 // Add this function to fetch and render all projects for the admin:
@@ -1356,94 +1434,54 @@ async function loadAllProjects() {
             headers: authHeaders("application/json")
         });
         const projects = await handleApiResponse(response, 'Failed to load projects');
-        const list = document.getElementById("all-projects-list");
-        if (!list) return;
-        list.innerHTML = "";
-        if (!projects.length) {
-            list.innerHTML = "<div style='color:#888;padding:14px;'>No projects found.</div>";
-            return;
-        }
-        projects.forEach(project => {
-            const card = document.createElement('div');
-            card.className = 'item-card project-card';
-            card.innerHTML = `
-                <h3><i class="fas fa-lightbulb"></i> ${project.title}</h3>
-                <p>${project.summary || 'No summary'}</p>
-                <div class="meta">
-                    <span>Tech: ${project.technologies.join(', ')}</span>
-                </div>
-                <button class="admin-delete-btn"><i class="fas fa-trash"></i> Delete</button>
-            `;
-            card.querySelector('.admin-delete-btn').onclick = function () {
-                deleteProject(project.id, this);
-            };
-            list.appendChild(card);
-        });
+        renderAdminProjects(projects);
     } catch (error) {
         showMessage(error.message || 'Failed to load projects.');
     }
 }
 
-
-async function deleteCourse(id, btn) {
-    if (!window.token || window.userRole !== 'ADMIN') return;
-    if (!confirm('Are you sure you want to delete this course?')) return;
-    try {
-        await fetch(`${API}/courses/${id}`, {
-            method: "DELETE",
-            headers: authHeaders()
-        });
-        showMessage("Course deleted.", false);
-        btn.closest('.item-card').remove();
-    } catch {
-        showMessage("Failed to delete course.");
+function renderAdminProjects(projects) {
+    const list = document.getElementById("all-projects-list");
+    if (!list) return;
+    list.innerHTML = "";
+    if (!projects.length) {
+        list.innerHTML = "<div style='color:#888;padding:14px;'>No projects found.</div>";
+        return;
     }
-}
+    projects.forEach(project => {
+        const card = document.createElement('div');
+        card.className = 'item-card project-card';
+        card.innerHTML = `
+            <h3><i class="fas fa-lightbulb"></i> ${project.title}</h3>
+            <p>${project.summary || 'No summary'}</p>
+            <div class="meta">
+                <span>Tech: ${project.technologies.join(', ')}</span>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-danger delete-project-btn" data-id="${project.id}">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
 
-// Delete Article (ADMIN)
-async function deleteArticle(id, btn) {
-    if (!window.token || window.userRole !== 'ADMIN') return;
-    if (!confirm('Are you sure you want to delete this article?')) return;
-    try {
-        await fetch(`${API}/articles/${id}`, {
-            method: "DELETE",
-            headers: authHeaders()
-        });
-        showMessage("Article deleted.", false);
-        btn.closest('.item-card').remove();
-    } catch {
-        showMessage("Failed to delete article.");
-    }
-}
-
-// Delete PDF (ADMIN)
-async function deletePdf(id, btn) {
-    if (!window.token || window.userRole !== 'ADMIN') return;
-    if (!confirm('Are you sure you want to delete this PDF?')) return;
-    try {
-        await fetch(`${API}/pdf/${id}`, {
-            method: "DELETE",
-            headers: authHeaders()
-        });
-        showMessage("PDF deleted.", false);
-        btn.closest('.item-card').remove();
-    } catch {
-        showMessage("Failed to delete PDF.");
-    }
-}
-
-// Delete Project (ADMIN)
-async function deleteProject(id, btn) {
-    if (!window.token || window.userRole !== 'ADMIN') return;
-    if (!confirm('Are you sure you want to delete this project?')) return;
-    try {
-        await fetch(`${API}/projects/${id}`, {
-            method: "DELETE",
-            headers: authHeaders()
-        });
-        showMessage("Project deleted.", false);
-        btn.closest('.item-card').remove();
-    } catch {
-        showMessage("Failed to delete project.");
-    }
+    // Delete project event
+    list.querySelectorAll('.delete-project-btn').forEach(btn => {
+        btn.onclick = async () => {
+            const id = btn.getAttribute('data-id');
+            if (confirm("Are you sure you want to delete this project?")) {
+                try {
+                    await fetch(`${API}/projects/${id}`, {
+                        method: "DELETE",
+                        headers: authHeaders()
+                    });
+                    showMessage("Project deleted.", false);
+                    btn.closest('.item-card').remove();
+                } catch {
+                    showMessage("Failed to delete project.");
+                }
+            }
+        };
+    });
 }

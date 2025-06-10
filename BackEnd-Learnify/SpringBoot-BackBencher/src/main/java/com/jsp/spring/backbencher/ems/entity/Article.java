@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -40,9 +41,18 @@ public class Article {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+    
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Column(name = "reference_article_ids")
+    private List<Long> references = new ArrayList<>();
 
-    // Relationships
- // Article.java
+    public List<Long> getReferences() {
+		return references;
+	}
+	public void setReferences(List<Long> references) {
+		this.references = references;
+	}
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnoreProperties({"articles", "pdfUploads", "ratings", "password"})
